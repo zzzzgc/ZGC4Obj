@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:37:48 GMT+08:00 2017
+@default-public-http\://192.168.1.116\:8081/nexus/content/groups/public/.lastUpdated=1488788112386
+https\://repo.maven.apache.org/maven2/.lastUpdated=1488788114380
+http\://192.168.1.116\:8081/nexus/content/groups/public/.error=Could not transfer artifact commons-fileupload\:commons-fileupload\:pom\:1.2.2 from/to public (http\://192.168.1.116\:8081/nexus/content/groups/public/)\: connect timed out
+http\://maven.aliyun.com/nexus/content/groups/public/.lastUpdated=1489646268654

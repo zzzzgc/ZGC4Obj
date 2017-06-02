@@ -1,0 +1,117 @@
+package com.xinxing.o.boss.business.provider.other.tjmtest.api;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.o.boss.business.provider.api.supplier.api.SendApi;
+import com.xinxing.o.boss.business.provider.other.tjmtest.util.TjmTestUtils;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.json.JsonUtils;
+import com.xinxing.o.boss.common.phone.PhoneUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.util.FlowSendLogUtils;
+import com.xinxing.o.boss.common.xml.XmlUtils;
+
+public class TjmTestSendApiImpl implements SendApi {
+	private static Logger log = Logger.getLogger(TjmTestSendApiImpl.class);
+	
+	public static void main(String[] args) {
+		PhoneUtils.initLog(log);
+		List<SendOrderInfo> sendOrderInfos = new ArrayList<>();
+		SendOrderInfo sendOrderInfo = PhoneUtils.createSendOrderInfo("tjmTest233","1,30","testId563214","1682333666555");
+		sendOrderInfos.add(sendOrderInfo);
+		TjmTestSendApiImpl test = new TjmTestSendApiImpl();
+		Map<String, SendOrderResult> result = test.querys(sendOrderInfos);
+    	System.out.println("receive:" + JsonUtils.obj2Json(result));
+	}
+	
+	@Override
+	public SendOrderResult send(SendOrderInfo sendOrderInfo) {
+		
+		return null;
+	}
+	
+	/*
+	 * 查询回调信息
+	 * <?xml version="1.0" encoding="UTF-8"?>
+	  -<response>
+		<userid> xxx</userid> //用户编号
+		<Porderid>xxx</Porderid> //山东联通平台订单号
+		<orderid> xxx</orderid> //用户订单号
+		<account>xxx</account> //需要充值的手机号码
+		<face> xxx</face> //充值面值
+		<amount>1</amount> //购买数量
+		<starttime>xxx</starttime>//开始时间
+		<state> xxx</state> //订单状态
+		<endtime>xxx</endtime>//结束时间
+		<error> xxx</error> //错误提示（详见附录3.2）
+		</response>
+		
+		订单状态：  	  state		订单状态
+					8		等待扣款
+					0		充值中
+					1		充值成功
+					2		充值失败
+	*/
+	@Override
+	public Map<String, SendOrderResult> querys(List<SendOrderInfo> sendOrderInfos) {
+		Map<String,SendOrderResult> resultMap = new HashMap<>();
+		SendOrderResult result = null;
+		for (SendOrderInfo sendOrderInfo : sendOrderInfos) {
+			String orderid   = sendOrderInfo.getOrderId();
+			String queryUrl  = Constants.testgetString("tjm_queryUrl").trim();
+			String sendParam = TjmTestUtils.getSendRequest(sendOrderInfo);
+			String sendUrl 	 = queryUrl+"?"+sendParam;
+			//获取订单发送日志信息
+			FlowSendLogUtils.sendReqLog(log, orderid, sendParam);
+			//获取回调信息
+			String getResp   = HttpUtils.sendGet(sendUrl, "utf-8");
+			if (StringUtils.isNotBlank(getResp)) {
+				//获取返回值的参数
+				String errorCode   = XmlUtils.getXmlNoteValue(getResp, "response/error/text()");
+				String status 	   = XmlUtils.getXMLNoteValue(getResp, "response/state/text()"); 
+				String bossOrderId = XmlUtils.getXMLNoteValue(getResp, "response/Porderid/text()");
+				if ("0".equals(errorCode)) {
+					if ("1".equals(status)) {
+						result = new SendOrderResult(SendOrderStatus.SUCCESS.status,null,bossOrderId);
+					}else if ("0".equals(status)||"8".equals(status)) {
+						result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,bossOrderId);
+					}else if ("2".equals(status)) {
+						result = new SendOrderResult(SendOrderStatus.FAILED.status,null,bossOrderId);
+					}else {
+						result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,"查询时异常，需人工处理",bossOrderId);
+					}
+				}else {
+					result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,errorCode +':'+TjmTestUtils.getErrorMsg(errorCode),bossOrderId);
+				}
+			
+			}else {
+				result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,"查询返回为空",null);
+			}
+			resultMap.put("orderid", result);
+		}
+		return resultMap;
+	}
+
+	@Override
+	public SendOrderResult query(SendOrderInfo sendOrderInfo) {
+		List<SendOrderInfo> queryList = new ArrayList<>();
+		queryList.add(sendOrderInfo);
+		Map<String, SendOrderResult> resultMap = querys(queryList);
+		String keyid = sendOrderInfo.getOrderId();
+		if (resultMap != null) {
+			SendOrderResult result = resultMap.get(keyid);
+			return result;
+		}
+		return null;
+	}
+
+}

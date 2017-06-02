@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xinxing.transfer.dao.BossOrderMapper" >
+  <resultMap id="BaseResultMap" type="com.xinxing.transfer.po.BossOrder" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="customerId" property="customerid" jdbcType="INTEGER" />
+    <result column="orderKey" property="orderkey" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="categoryId" property="categoryid" jdbcType="INTEGER" />
+    <result column="providerCategoryId" property="providercategoryid" jdbcType="INTEGER" />
+    <result column="submitTime" property="submittime" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="failReason" property="failreason" jdbcType="VARCHAR" />
+    <result column="failTime" property="failtime" jdbcType="TIMESTAMP" />
+    <result column="successTime" property="successtime" jdbcType="TIMESTAMP" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="cost" property="cost" jdbcType="DECIMAL" />
+    <result column="providerId" property="providerid" jdbcType="INTEGER" />
+    <result column="callbackStatus" property="callbackstatus" jdbcType="INTEGER" />
+    <result column="province" property="province" jdbcType="VARCHAR" />
+    <result column="city" property="city" jdbcType="VARCHAR" />
+    <result column="isSecondChannel" property="issecondchannel" jdbcType="INTEGER" />
+    <result column="receiveTime" property="receivetime" jdbcType="TIMESTAMP" />
+    <result column="callbackTime" property="callbacktime" jdbcType="TIMESTAMP" />
+    <result column="operator" property="operator" jdbcType="VARCHAR" />
+    <result column="providerKey" property="providerkey" jdbcType="VARCHAR" />
+    <result column="chargeCount" property="chargecount" jdbcType="INTEGER" />
+    <result column="priority" property="priority" jdbcType="INTEGER" />
+    <result column="isBlack" property="isblack" jdbcType="INTEGER" />
+    <result column="handleStatus" property="handlestatus" jdbcType="INTEGER" />
+    <result column="searchNum" property="searchnum" jdbcType="TINYINT" />
+    <result column="weiXinPrice" property="weixinprice" jdbcType="DOUBLE" />
+    <result column="bizType" property="biztype" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, customerId, orderKey, phone, categoryId, providerCategoryId, submitTime, status, 
+    failReason, failTime, successTime, price, cost, providerId, callbackStatus, province, 
+    city, isSecondChannel, receiveTime, callbackTime, operator, providerKey, chargeCount, 
+    priority, isBlack, handleStatus, searchNum, weiXinPrice, bizType
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.xinxing.transfer.po.BossOrderExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from boss_order
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from boss_order
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from boss_order
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.xinxing.transfer.po.BossOrderExample" >
+    delete from boss_order
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.xinxing.transfer.po.BossOrder" >
+    insert into boss_order (id, customerId, orderKey, 
+      phone, categoryId, providerCategoryId, 
+      submitTime, status, failReason, 
+      failTime, successTime, price, 
+      cost, providerId, callbackStatus, 
+      province, city, isSecondChannel, 
+      receiveTime, callbackTime, operator, 
+      providerKey, chargeCount, priority, 
+      isBlack, handleStatus, searchNum, 
+      weiXinPrice, bizType)
+    values (#{id,jdbcType=INTEGER}, #{customerid,jdbcType=INTEGER}, #{orderkey,jdbcType=VARCHAR}, 
+      #{phone,jdbcType=VARCHAR}, #{categoryid,jdbcType=INTEGER}, #{providercategoryid,jdbcType=INTEGER}, 
+      #{submittime,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER}, #{failreason,jdbcType=VARCHAR}, 
+      #{failtime,jdbcType=TIMESTAMP}, #{successtime,jdbcType=TIMESTAMP}, #{price,jdbcType=DECIMAL}, 
+      #{cost,jdbcType=DECIMAL}, #{providerid,jdbcType=INTEGER}, #{callbackstatus,jdbcType=INTEGER}, 
+      #{province,jdbcType=VARCHAR}, #{city,jdbcType=VARCHAR}, #{issecondchannel,jdbcType=INTEGER}, 
+      #{receivetime,jdbcType=TIMESTAMP}, #{callbacktime,jdbcType=TIMESTAMP}, #{operator,jdbcType=VARCHAR}, 
+      #{providerkey,jdbcType=VARCHAR}, #{chargecount,jdbcType=INTEGER}, #{priority,jdbcType=INTEGER}, 
+      #{isblack,jdbcType=INTEGER}, #{handlestatus,jdbcType=INTEGER}, #{searchnum,jdbcType=TINYINT}, 
+      #{weixinprice,jdbcType=DOUBLE}, #{biztype,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xinxing.transfer.po.BossOrder" >
+    insert into boss_order
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="customerid != null" >
+        customerId,
+      </if>
+      <if test="orderkey != null" >
+        orderKey,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="categoryid != null" >
+        categoryId,
+      </if>
+      <if test="providercategoryid != null" >
+        providerCategoryId,
+      </if>
+      <if test="submittime != null" >
+        submitTime,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="failreason != null" >
+        failReason,
+      </if>
+      <if test="failtime != null" >
+        failTime,
+      </if>
+      <if test="successtime != null" >
+        successTime,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+      <if test="cost != null" >
+        cost,
+      </if>
+      <if test="providerid != null" >
+        providerId,
+      </if>
+      <if test="callbackstatus != null" >
+        callbackStatus,
+      </if>
+      <if test="province != null" >
+        province,
+      </if>
+      <if test="city != null" >
+        city,
+      </if>
+      <if test="issecondchannel != null" >
+        isSecondChannel,
+      </if>
+      <if test="receivetime != null" >
+        receiveTime,
+      </if>
+      <if test="callbacktime != null" >
+        callbackTime,
+      </if>
+      <if test="operator != null" >
+        operator,
+      </if>
+      <if test="providerkey != null" >
+        providerKey,
+      </if>
+      <if test="chargecount != null" >
+        chargeCount,
+      </if>
+      <if test="priority != null" >
+        priority,
+      </if>
+      <if test="isblack != null" >
+        isBlack,
+      </if>
+      <if test="handlestatus != null" >
+        handleStatus,
+      </if>
+      <if test="searchnum != null" >
+        searchNum,
+      </if>
+      <if test="weixinprice != null" >
+        weiXinPrice,
+      </if>
+      <if test="biztype != null" >
+        bizType,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="customerid != null" >
+        #{customerid,jdbcType=INTEGER},
+      </if>
+      <if test="orderkey != null" >
+        #{orderkey,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="categoryid != null" >
+        #{categoryid,jdbcType=INTEGER},
+      </if>
+      <if test="providercategoryid != null" >
+        #{providercategoryid,jdbcType=INTEGER},
+      </if>
+      <if test="submittime != null" >
+        #{submittime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="failreason != null" >
+        #{failreason,jdbcType=VARCHAR},
+      </if>
+      <if test="failtime != null" >
+        #{failtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="successtime != null" >
+        #{successtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="cost != null" >
+        #{cost,jdbcType=DECIMAL},
+      </if>
+      <if test="providerid != null" >
+        #{providerid,jdbcType=INTEGER},
+      </if>
+      <if test="callbackstatus != null" >
+        #{callbackstatus,jdbcType=INTEGER},
+      </if>
+      <if test="province != null" >
+        #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null" >
+        #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="issecondchannel != null" >
+        #{issecondchannel,jdbcType=INTEGER},
+      </if>
+      <if test="receivetime != null" >
+        #{receivetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="callbacktime != null" >
+        #{callbacktime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="operator != null" >
+        #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="providerkey != null" >
+        #{providerkey,jdbcType=VARCHAR},
+      </if>
+      <if test="chargecount != null" >
+        #{chargecount,jdbcType=INTEGER},
+      </if>
+      <if test="priority != null" >
+        #{priority,jdbcType=INTEGER},
+      </if>
+      <if test="isblack != null" >
+        #{isblack,jdbcType=INTEGER},
+      </if>
+      <if test="handlestatus != null" >
+        #{handlestatus,jdbcType=INTEGER},
+      </if>
+      <if test="searchnum != null" >
+        #{searchnum,jdbcType=TINYINT},
+      </if>
+      <if test="weixinprice != null" >
+        #{weixinprice,jdbcType=DOUBLE},
+      </if>
+      <if test="biztype != null" >
+        #{biztype,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.xinxing.transfer.po.BossOrderExample" resultType="java.lang.Integer" >
+    select count(*) from boss_order
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update boss_order
+    <set >
+      <if test="record.id != null" >
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.customerid != null" >
+        customerId = #{record.customerid,jdbcType=INTEGER},
+      </if>
+      <if test="record.orderkey != null" >
+        orderKey = #{record.orderkey,jdbcType=VARCHAR},
+      </if>
+      <if test="record.phone != null" >
+        phone = #{record.phone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.categoryid != null" >
+        categoryId = #{record.categoryid,jdbcType=INTEGER},
+      </if>
+      <if test="record.providercategoryid != null" >
+        providerCategoryId = #{record.providercategoryid,jdbcType=INTEGER},
+      </if>
+      <if test="record.submittime != null" >
+        submitTime = #{record.submittime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.status != null" >
+        status = #{record.status,jdbcType=INTEGER},
+      </if>
+      <if test="record.failreason != null" >
+        failReason = #{record.failreason,jdbcType=VARCHAR},
+      </if>
+      <if test="record.failtime != null" >
+        failTime = #{record.failtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.successtime != null" >
+        successTime = #{record.successtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.price != null" >
+        price = #{record.price,jdbcType=DECIMAL},
+      </if>
+      <if test="record.cost != null" >
+        cost = #{record.cost,jdbcType=DECIMAL},
+      </if>
+      <if test="record.providerid != null" >
+        providerId = #{record.providerid,jdbcType=INTEGER},
+      </if>
+      <if test="record.callbackstatus != null" >
+        callbackStatus = #{record.callbackstatus,jdbcType=INTEGER},
+      </if>
+      <if test="record.province != null" >
+        province = #{record.province,jdbcType=VARCHAR},
+      </if>
+      <if test="record.city != null" >
+        city = #{record.city,jdbcType=VARCHAR},
+      </if>
+      <if test="record.issecondchannel != null" >
+        isSecondChannel = #{record.issecondchannel,jdbcType=INTEGER},
+      </if>
+      <if test="record.receivetime != null" >
+        receiveTime = #{record.receivetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.callbacktime != null" >
+        callbackTime = #{record.callbacktime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.operator != null" >
+        operator = #{record.operator,jdbcType=VARCHAR},
+      </if>
+      <if test="record.providerkey != null" >
+        providerKey = #{record.providerkey,jdbcType=VARCHAR},
+      </if>
+      <if test="record.chargecount != null" >
+        chargeCount = #{record.chargecount,jdbcType=INTEGER},
+      </if>
+      <if test="record.priority != null" >
+        priority = #{record.priority,jdbcType=INTEGER},
+      </if>
+      <if test="record.isblack != null" >
+        isBlack = #{record.isblack,jdbcType=INTEGER},
+      </if>
+      <if test="record.handlestatus != null" >
+        handleStatus = #{record.handlestatus,jdbcType=INTEGER},
+      </if>
+      <if test="record.searchnum != null" >
+        searchNum = #{record.searchnum,jdbcType=TINYINT},
+      </if>
+      <if test="record.weixinprice != null" >
+        weiXinPrice = #{record.weixinprice,jdbcType=DOUBLE},
+      </if>
+      <if test="record.biztype != null" >
+        bizType = #{record.biztype,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update boss_order
+    set id = #{record.id,jdbcType=INTEGER},
+      customerId = #{record.customerid,jdbcType=INTEGER},
+      orderKey = #{record.orderkey,jdbcType=VARCHAR},
+      phone = #{record.phone,jdbcType=VARCHAR},
+      categoryId = #{record.categoryid,jdbcType=INTEGER},
+      providerCategoryId = #{record.providercategoryid,jdbcType=INTEGER},
+      submitTime = #{record.submittime,jdbcType=TIMESTAMP},
+      status = #{record.status,jdbcType=INTEGER},
+      failReason = #{record.failreason,jdbcType=VARCHAR},
+      failTime = #{record.failtime,jdbcType=TIMESTAMP},
+      successTime = #{record.successtime,jdbcType=TIMESTAMP},
+      price = #{record.price,jdbcType=DECIMAL},
+      cost = #{record.cost,jdbcType=DECIMAL},
+      providerId = #{record.providerid,jdbcType=INTEGER},
+      callbackStatus = #{record.callbackstatus,jdbcType=INTEGER},
+      province = #{record.province,jdbcType=VARCHAR},
+      city = #{record.city,jdbcType=VARCHAR},
+      isSecondChannel = #{record.issecondchannel,jdbcType=INTEGER},
+      receiveTime = #{record.receivetime,jdbcType=TIMESTAMP},
+      callbackTime = #{record.callbacktime,jdbcType=TIMESTAMP},
+      operator = #{record.operator,jdbcType=VARCHAR},
+      providerKey = #{record.providerkey,jdbcType=VARCHAR},
+      chargeCount = #{record.chargecount,jdbcType=INTEGER},
+      priority = #{record.priority,jdbcType=INTEGER},
+      isBlack = #{record.isblack,jdbcType=INTEGER},
+      handleStatus = #{record.handlestatus,jdbcType=INTEGER},
+      searchNum = #{record.searchnum,jdbcType=TINYINT},
+      weiXinPrice = #{record.weixinprice,jdbcType=DOUBLE},
+      bizType = #{record.biztype,jdbcType=INTEGER}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xinxing.transfer.po.BossOrder" >
+    update boss_order
+    <set >
+      <if test="customerid != null" >
+        customerId = #{customerid,jdbcType=INTEGER},
+      </if>
+      <if test="orderkey != null" >
+        orderKey = #{orderkey,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="categoryid != null" >
+        categoryId = #{categoryid,jdbcType=INTEGER},
+      </if>
+      <if test="providercategoryid != null" >
+        providerCategoryId = #{providercategoryid,jdbcType=INTEGER},
+      </if>
+      <if test="submittime != null" >
+        submitTime = #{submittime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="failreason != null" >
+        failReason = #{failreason,jdbcType=VARCHAR},
+      </if>
+      <if test="failtime != null" >
+        failTime = #{failtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="successtime != null" >
+        successTime = #{successtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="price != null" >
+        price = #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="cost != null" >
+        cost = #{cost,jdbcType=DECIMAL},
+      </if>
+      <if test="providerid != null" >
+        providerId = #{providerid,jdbcType=INTEGER},
+      </if>
+      <if test="callbackstatus != null" >
+        callbackStatus = #{callbackstatus,jdbcType=INTEGER},
+      </if>
+      <if test="province != null" >
+        province = #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null" >
+        city = #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="issecondchannel != null" >
+        isSecondChannel = #{issecondchannel,jdbcType=INTEGER},
+      </if>
+      <if test="receivetime != null" >
+        receiveTime = #{receivetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="callbacktime != null" >
+        callbackTime = #{callbacktime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="operator != null" >
+        operator = #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="providerkey != null" >
+        providerKey = #{providerkey,jdbcType=VARCHAR},
+      </if>
+      <if test="chargecount != null" >
+        chargeCount = #{chargecount,jdbcType=INTEGER},
+      </if>
+      <if test="priority != null" >
+        priority = #{priority,jdbcType=INTEGER},
+      </if>
+      <if test="isblack != null" >
+        isBlack = #{isblack,jdbcType=INTEGER},
+      </if>
+      <if test="handlestatus != null" >
+        handleStatus = #{handlestatus,jdbcType=INTEGER},
+      </if>
+      <if test="searchnum != null" >
+        searchNum = #{searchnum,jdbcType=TINYINT},
+      </if>
+      <if test="weixinprice != null" >
+        weiXinPrice = #{weixinprice,jdbcType=DOUBLE},
+      </if>
+      <if test="biztype != null" >
+        bizType = #{biztype,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xinxing.transfer.po.BossOrder" >
+    update boss_order
+    set customerId = #{customerid,jdbcType=INTEGER},
+      orderKey = #{orderkey,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      categoryId = #{categoryid,jdbcType=INTEGER},
+      providerCategoryId = #{providercategoryid,jdbcType=INTEGER},
+      submitTime = #{submittime,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=INTEGER},
+      failReason = #{failreason,jdbcType=VARCHAR},
+      failTime = #{failtime,jdbcType=TIMESTAMP},
+      successTime = #{successtime,jdbcType=TIMESTAMP},
+      price = #{price,jdbcType=DECIMAL},
+      cost = #{cost,jdbcType=DECIMAL},
+      providerId = #{providerid,jdbcType=INTEGER},
+      callbackStatus = #{callbackstatus,jdbcType=INTEGER},
+      province = #{province,jdbcType=VARCHAR},
+      city = #{city,jdbcType=VARCHAR},
+      isSecondChannel = #{issecondchannel,jdbcType=INTEGER},
+      receiveTime = #{receivetime,jdbcType=TIMESTAMP},
+      callbackTime = #{callbacktime,jdbcType=TIMESTAMP},
+      operator = #{operator,jdbcType=VARCHAR},
+      providerKey = #{providerkey,jdbcType=VARCHAR},
+      chargeCount = #{chargecount,jdbcType=INTEGER},
+      priority = #{priority,jdbcType=INTEGER},
+      isBlack = #{isblack,jdbcType=INTEGER},
+      handleStatus = #{handlestatus,jdbcType=INTEGER},
+      searchNum = #{searchnum,jdbcType=TINYINT},
+      weiXinPrice = #{weixinprice,jdbcType=DOUBLE},
+      bizType = #{biztype,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,30 @@
+#===============================================================
+#   db config
+#===============================================================
+boneCP.idleConnectionTestPeriod=60
+boneCP.idleMaxAge=240
+boneCP.maxConnectionsPerPartition=30
+boneCP.minConnectionsPerPartition=10
+boneCP.partitionCount=3
+
+boneCP.acquireIncrement=5
+boneCP.statementsCacheSize=100
+boneCP.statementsCachedPerConnection=30
+boneCP.releaseHelperThreads=3
+#===============================================================
+#   db config Master t
+#===============================================================
+datasource222.type=mysql
+datasource222.driverClassName=com.mysql.jdbc.Driver
+
+datasource222.url=jdbc:mysql://172.18.167.170:3306/boss?useUnicode=true&characterEncoding=UTF-8
+datasource222.username=hyboss
+datasource222.password=J5u56YeAhI
+
+
+#========================
+# system name
+#========================
+sys_boss_name=\u6D4B\u8BD5BOSS
+
+

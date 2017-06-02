@@ -1,0 +1,500 @@
+package com.xinxing.o.boss.api.customer.cmd;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.xinxing.boss.interaction.pojo.common.NumberSegment;
+import com.xinxing.boss.interaction.pojo.customer.CustomerInfo;
+import com.xinxing.boss.interaction.pojo.customer.CustomerProductInfo;
+import com.xinxing.boss.interaction.pojo.customer.OrderInfo;
+
+import com.xinxing.flow.cmd.a;
+import com.xinxing.o.boss.api.customer.domain.FlowCustomerReq;
+import com.xinxing.o.boss.api.customer.domain.FlowProductReq;
+import com.xinxing.o.boss.api.customer.domain.FlowProductReqList;
+import com.xinxing.o.boss.api.customer.domain.FlowReqType;
+import com.xinxing.o.boss.api.customer.domain.FlowRspErrorMsg;
+import com.xinxing.o.boss.api.customer.domain.FlowRspResult;
+import com.xinxing.o.boss.api.customer.domain.FlowRspType;
+import com.xinxing.o.boss.api.customer.utils.FlowReqUtils;
+import com.xinxing.o.boss.common.encry.MD5_HexUtil;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.json.JsonUtils;
+import com.xinxing.o.boss.common.pkg.PackageMsg;
+import com.xinxing.o.boss.common.time.TimeUtils;
+
+public class CmdCustomerApi extends a{
+	
+	private static final Logger log = Logger.getLogger(CmdCustomerApi.class);
+	
+	//token时间缓存
+	private static Map<Integer,Date> tokenTimeMap=new ConcurrentHashMap<Integer,Date>();
+	
+	//token缓存
+	private static Map<Integer,String> tokenStrMap=new ConcurrentHashMap<Integer, String>();
+	
+	
+	@Autowired
+	private com.xinxing.boss.interaction.service.customer.a flowCustomerService;
+	
+	@Autowired
+	private com.xinxing.boss.interaction.service.order.a flowOrderService;
+	
+	@Autowired
+	private com.xinxing.boss.interaction.service.common.a flowCommonService;
+
+	@Override
+	public String b(HttpServletRequest request, HttpServletResponse response) {
+		Map<Object,Object> map = checkCustomerReq(request);
+		String rspStr = null;
+		CustomerInfo info = null;
+		boolean isCheckOk = (boolean) map.get("state");
+		if(isCheckOk){
+			info = (CustomerInfo) map.get("result");
+			FlowCustomerReq req = (FlowCustomerReq) map.get("customerReq");
+			FlowReqType flowReqType = FlowReqType.getFlowType(req.getAction());
+			Map<Object,Object> actionMap = null;
+			boolean isActionOk = false;
+			String actionRes = null;
+			switch(flowReqType){
+			case GET_BALANCE:
+				actionMap = PackageMsg.getRightOperCode(info.getBalance()+"");
+				break;
+			case GET_CALLBACK:
+				actionMap = getCallBack(req, info);
+				break;
+			case GET_MOBILE_PRODUCT:
+				actionMap = getMobileProduct(req, info);
+				break;
+			case GET_TOKEN:
+				//TODO token失效要测试一下
+				actionMap = getToken(req, info);
+				break;
+			case SEND_ORDER:
+				actionMap = sendOrder(req, info);
+				break;
+			case GET_PRODUCT:
+				actionMap = getProduct(req, info);
+				break;
+			}
+			
+			isActionOk = (boolean) actionMap.get("state");
+			String customerId = info.getId()+"";
+			if(isActionOk){
+				Object obj = actionMap.get("result");
+				if(obj instanceof String){
+					actionRes = (String)obj;
+					rspStr = getFlowRightRsp(FlowRspType.STRING, actionRes, customerId, null);
+				}else if(obj instanceof Integer){
+					String msg = (String) actionMap.get("msg");
+					String code = (String) actionMap.get("code");
+					String data = (String) actionMap.get("data");
+					rspStr = getFlowRightRsp(FlowRspType.STRING, msg, code, data);
+				}else{
+					rspStr = getFlowRightRsp(FlowRspType.OBJECT, actionRes, customerId, obj);
+				}
+				
+			}else{
+				actionRes = (String) actionMap.get("msg");
+				rspStr = getFlowErrorRsp(FlowRspType.ERROR, actionRes, customerId, null);
+			}
+		}else{
+			rspStr = (String) map.get("msg");
+		}
+		int customerId = 0;
+		if(info!=null){
+			customerId = info.getId();
+		}
+		return a(response, rspStr, "-采购商请求返回信息-customerId=" + customerId);
+	}
+	
+	
+	/**
+	 * 获取采购商采购产品
+	 * @param req
+	 * @param info
+	 * @return
+	 */
+	private Map<Object,Object> getProduct(FlowCustomerReq req,CustomerInfo info){
+		Map<Object,Object> map = null;
+			List<CustomerProductInfo> list = flowCustomerService.b(info.getId(), 1000, 1);
+			//TODO 构造采购商采购商品信息
+			if(list!=null){
+				List<FlowProductReq> flowProductReqs = new ArrayList<>();
+				for(int i=0,len=list.size();i<len;i++){
+					CustomerProductInfo productInfo = list.get(i);
+					String operator = null;
+					String operatorModel = null;
+					switch(productInfo.getMobileOperator()){
+					case "移动":
+						operator = "移动";
+						operatorModel = "YD";
+						break;
+					case "联通":
+						operator = "联通";
+						operatorModel = "LT";
+						break;
+					case "电信":
+						operator = "电信";
+						operatorModel = "DX";
+						break;
+					}
+					FlowProductReq productReq  = new FlowProductReq(productInfo.getId()+"", operatorModel, operator, "流量包", filterChinese(productInfo.getProductName())); 
+					flowProductReqs.add(productReq);
+				}
+				FlowProductReqList flowProductReqList = new FlowProductReqList(flowProductReqs);
+				map=PackageMsg.getRightOperCode(flowProductReqList);
+			}else{
+				map=PackageMsg.getErrorMsg("产品信息为空，请联系客服");
+			}	
+		return map;
+	}
+	
+	/**
+	 * 获取手机可充值产品
+	 * @param req
+	 * @param info
+	 * @return
+	 */
+	private Map<Object,Object> getMobileProduct(FlowCustomerReq req,CustomerInfo info){
+		Map<Object,Object> map = null;
+		NumberSegment segment = flowCommonService.h(req.getMobile());
+		if(segment!=null){
+			List<CustomerProductInfo> list = flowCustomerService.a(info.getId(), segment.getOperator());
+			Map<String,String> productMap = new HashMap<String, String>();
+			if(list!=null){
+				for(int i=0,len=list.size();i<len;i++){
+					CustomerProductInfo productInfo = list.get(i);
+					String tag = filterChinese(productInfo.getProductName());
+					productMap.put(tag,productInfo.getId()+"");
+				}
+				//转为json
+				map = PackageMsg.getRightOperCode(JsonUtils.obj2Json(productMap));
+			}
+		}else{
+			map =  PackageMsg.getErrorMsg("手机号码对应运营商不存在，请反馈给客服");
+		}
+		return map;
+	}
+	
+	/**
+	 * 查询订单信息
+	 * @param req
+	 * @param info
+	 * @return
+	 */
+	private Map<Object,Object> getCallBack(FlowCustomerReq req,CustomerInfo info){
+		Map<Object,Object> map = null;
+		OrderInfo orderInfo = flowOrderService.b(info.getId(), req.getFlowKey());
+		if(orderInfo==null){
+			map = PackageMsg.getErrorMsg("订单不存在");
+		}else{
+			String orderStatus = null;
+			String msg = "充值中";
+			String failReason = null;;
+			switch (orderInfo.getStatus()) {
+			case 1:
+				orderStatus = "WAIT";
+				break;
+			case 2:
+				orderStatus = "WAIT";
+				break;
+			case 3:
+				orderStatus = "SUCCESS";
+				msg = "充值成功";
+				break;
+			case 4:
+				orderStatus = "ERROR";
+				msg = "充值失败";
+				failReason = orderInfo.getFailReason();
+				if(failReason.indexOf("停机")>-1){
+					failReason = "成员的状态为停机,不允许办理该业务!";
+				}else if(failReason.indexOf("开通未售出")>-1){
+					failReason = "成员的状态为已开通未售出,不允许办理该业务!";
+				}else if(failReason.indexOf("已经是集团用户")>-1){
+					failReason = "已经是集团成员,不允许重复加入!";
+				}else{
+					failReason = "充值失败";
+				}
+				break;
+			case 5:
+				orderStatus = "WAIT";
+				break;
+			case 6:
+				orderStatus = "WAIT";
+				break;
+			}
+			flowOrderService.e(orderInfo.getId(), 3);
+			map = PackageMsg.getRightOperCode(1);
+			map.put("code", orderStatus);
+			map.put("msg", msg);
+			map.put("data",failReason );
+		}
+		return map;
+	}
+	
+	/**
+	 * 发送订单
+	 * @param req
+	 * @param info
+	 * @return
+	 */
+	private Map<Object,Object> sendOrder(FlowCustomerReq req,CustomerInfo info){
+		try {
+			Map<Object,Object> map = flowOrderService.b(info.getId(), req.getFlowKey(), Integer.parseInt(req.getProduct()), req.getMobile());
+			boolean isOrderOk = (boolean) map.get("state");
+			if(isOrderOk){
+				String rspStr = (String) map.get("result");
+				map = PackageMsg.getRightOperCode(rspStr);
+			}else{
+				String rspStr = (String) map.get("msg");
+				map = PackageMsg.getErrorMsg(rspStr);
+			}
+			return map;
+		} catch (Exception e) {
+			log.info("-error-"+e.getMessage(),e);
+			log.error("-error-"+e.getMessage(),e);
+			return PackageMsg.getErrorMsg("请求产品错误");
+		}
+		
+	}
+	
+	/**
+	 * 获取Token
+	 * @param req
+	 * @param info
+	 * @return
+	 */
+	private Map<Object,Object> getToken(FlowCustomerReq req,CustomerInfo info){
+		Map<Object,Object> map = null;
+		if(!StringUtils.equals(req.getClientID(), info.getLoginName()) || !StringUtils.equals(req.getClientSeceret(), info.getDevKey())){
+			map = PackageMsg.getErrorMsg("开发者信息错误");
+		}
+		if(map==null){
+			int customerId = info.getId();
+			String token = tokenStrMap.get(customerId);
+			if(StringUtils.isBlank(token)){//为空时，返回新
+				token = customerId + info.getLoginName() + info.getDevKey()
+						+ TimeUtils.timeStamp();
+				token = MD5_HexUtil.md5Hex(token);
+				tokenStrMap.put(info.getId(), token);
+				Date time = TimeUtils.addHourForNow(new Date(), 2);
+				tokenTimeMap.put(info.getId(), time);
+			}else if(tokenTimeMap.get(customerId).before(new Date())){//过期时，返回新值
+				tokenTimeMap.remove(customerId);
+				tokenStrMap.remove(customerId);
+				token = customerId + info.getLoginName() + info.getDevKey()
+						+ TimeUtils.timeStamp();
+				token = MD5_HexUtil.md5Hex(token);
+				tokenStrMap.put(info.getId(), token);
+				Date time = TimeUtils.addHourForNow(new Date(), 2);
+				tokenTimeMap.put(info.getId(), time);
+			}
+			map = PackageMsg.getRightOperCode(token);
+		}
+		return map;
+	}
+	
+	
+	/**
+	 * 校验各种参数信息
+	 * @param request
+	 * @return
+	 */
+	private Map<Object,Object> checkCustomerReq(HttpServletRequest request){
+		String rspStr = null;
+		String reqIp = getReqIp(request);
+		 Map<Object,Object> map = null;
+		 //1、校验是否是Post
+		if(!StringUtils.equalsIgnoreCase(request.getMethod(),"POST")){
+			rspStr = getFlowErrorRsp(FlowRspType.ERROR, FlowRspErrorMsg.REQ_NOT_POST, reqIp, null);
+			map = PackageMsg.getErrorMsg(rspStr);
+		}
+		//2、校验Sign
+		String sign = request.getHeader("Sign");
+		if(map==null && StringUtils.isBlank(sign)){
+			rspStr = getFlowErrorRsp(FlowRspType.ERROR, FlowRspErrorMsg.SIGN_NULL, reqIp, null);
+			map = PackageMsg.getErrorMsg(rspStr);
+		}
+		
+		String token = request.getHeader("Token");
+		String postData = HttpUtils.getReqPostString(request, log);
+		//3、校验传入参数
+		if(map==null){
+			if(StringUtils.isNotBlank(postData)){
+				FlowCustomerReq customerReq = JsonUtils.json2Obj(postData, FlowCustomerReq.class);
+				//4、校验Action
+				boolean isAcitonOK = false;
+				if(map ==null){
+					for(FlowReqType reqType : FlowReqType.values()){
+						if(StringUtils.equals(reqType.type, customerReq.getAction())){
+							isAcitonOK = true;
+						}
+					}
+				} 
+				if(!isAcitonOK){
+					rspStr = getFlowErrorRsp(FlowRspType.ERROR,FlowRspErrorMsg.ACTION_ERROR, reqIp, null);
+					map = PackageMsg.getErrorMsg(rspStr);
+				}
+				
+				int customerId = Integer.parseInt(customerReq.getMerChant());
+				//5、校验采购商
+				CustomerInfo info = flowCustomerService.i(customerId);
+				if(info==null){
+					rspStr = getFlowErrorRsp(FlowRspType.ERROR, FlowRspErrorMsg.UNAUTH_CUSTOMER, reqIp, null);
+					map = PackageMsg.getErrorMsg(rspStr);
+				}
+				//6、校验授权IP
+				if(map ==null){
+					String allowIp = info.getAllowIp();
+					if(StringUtils.isNotBlank(allowIp) && !StringUtils.contains(allowIp, reqIp)){
+						rspStr = getFlowErrorRsp(FlowRspType.ERROR, FlowRspErrorMsg.UNAUTH_ERROR, reqIp, null);
+						map = PackageMsg.getErrorMsg(rspStr);
+					}
+				}
+				
+				//7、校验Sign是否合法
+				if(map ==null && !FlowReqUtils.isSignOk(sign, postData)){
+					rspStr = getFlowErrorRsp(FlowRspType.ERROR, FlowRspErrorMsg.SIGN_ERROR, reqIp, null);
+					map = PackageMsg.getErrorMsg(rspStr);
+				}
+				
+				//7、校验Token是否合法
+				if(map ==null && !StringUtils.equals(FlowReqType.GET_TOKEN.type, customerReq.getAction())){
+					if(tokenTimeMap.get(customerId)==null){
+						rspStr = getFlowErrorRsp(FlowRspType.ERROR, FlowRspErrorMsg.TOKEN_ERROR, reqIp, null);
+						map = PackageMsg.getErrorMsg(rspStr);
+					}
+					if(map ==null && tokenTimeMap.get(customerId).before(new Date())){
+						tokenTimeMap.remove(customerId);
+						tokenStrMap.remove(customerId);
+						rspStr = getFlowErrorRsp(FlowRspType.ERROR, FlowRspErrorMsg.TOKEN_ERROR, reqIp, null);
+						map = PackageMsg.getErrorMsg(rspStr);
+					}
+					if(map ==null && !StringUtils.equals(token, tokenStrMap.get(customerId))){
+						rspStr = getFlowErrorRsp(FlowRspType.ERROR, FlowRspErrorMsg.TOKEN_ERROR, reqIp, null);
+						map = PackageMsg.getErrorMsg(rspStr);
+					}
+					if(map!=null){
+						log.info("-token-error-customerId=" + customerId);
+					}
+				}
+				
+				//8、校验参数是否合法
+				if(map ==null &&  StringUtils.equals(FlowReqType.GET_MOBILE_PRODUCT.type, customerReq.getAction())){
+					if(StringUtils.isBlank(customerReq.getMobile())){
+						rspStr = getFlowErrorRsp(FlowRspType.ERROR, FlowRspErrorMsg.PHONE_ERROR, reqIp, null);
+						map = PackageMsg.getErrorMsg(rspStr);
+					}
+				}
+				if(map ==null && StringUtils.equals(FlowReqType.GET_CALLBACK.type, customerReq.getAction())){
+					if(StringUtils.isBlank(customerReq.getMobile()) || StringUtils.isBlank(customerReq.getFlowKey())){
+						rspStr = getFlowErrorRsp(FlowRspType.ERROR,FlowRspErrorMsg.PHONE_FLOWKEY_ERROR, reqIp, null);
+						map = PackageMsg.getErrorMsg(rspStr);
+					}
+				}
+				if(map ==null && StringUtils.equals(FlowReqType.SEND_ORDER.type, customerReq.getAction())){
+					if(StringUtils.isBlank(customerReq.getProduct()) || StringUtils.isBlank(customerReq.getMobile()) ||StringUtils.isBlank(customerReq.getFlowKey())){
+						rspStr = getFlowErrorRsp(FlowRspType.ERROR,FlowRspErrorMsg.PHONE_PRODUCT_FLOWKEY_ERROR, reqIp, null);
+						map = PackageMsg.getErrorMsg(rspStr);
+					}
+				}
+				
+				if(map==null){
+					map = PackageMsg.getRightOperCode(info);
+					map.put("customerReq", customerReq);
+				}
+			}else{
+				rspStr = getFlowErrorRsp(FlowRspType.ERROR,FlowRspErrorMsg.CONTENT_TYPE_ERROR, reqIp, null);
+				map = PackageMsg.getErrorMsg(rspStr);
+			}
+		}
+		return map;
+	}
+	
+	/**
+	 * 老版本返回错误信息
+	 * @param type
+	 * @param msg
+	 * @param code
+	 * @param data
+	 * @return
+	 */
+	private String getFlowErrorRsp(FlowRspType type,FlowRspErrorMsg errorMsg,String code,Object data){
+		FlowRspResult cr=new FlowRspResult(type.type, errorMsg.msg, code, data);
+		String res=JsonUtils.obj2Json(cr);
+		return res;
+	}
+	
+	/**
+	 * 老版本返回错误信息
+	 * @param type
+	 * @param errorMsg
+	 * @param code
+	 * @param data
+	 * @return
+	 */
+	private String getFlowErrorRsp(FlowRspType type,String errorMsg,String code,Object data){
+		FlowRspResult cr=new FlowRspResult(type.type, errorMsg, code, data);
+		String res=JsonUtils.obj2Json(cr);
+		return res;
+	}
+	
+	/**
+	 *  老版本返回正确信息
+	 * @param type
+	 * @param msg
+	 * @param code
+	 * @param data
+	 * @return
+	 */
+	private String getFlowRightRsp(FlowRspType type,String msg,String code,Object data){
+		FlowRspResult cr=new FlowRspResult(type.type, msg, code, data);
+		String res=JsonUtils.obj2Json(cr);
+		return res;
+	}
+
+	
+	private String filterChinese(String content) {
+    	//过滤汉字关键字
+    	String regExChinese = "[\u4e00-\u9fa5]";
+		Pattern pChinese = Pattern.compile(regExChinese);
+		StringBuilder chineseBuilder = new StringBuilder();
+		
+		for (int i = 0; i < content.length(); i++) {
+			String one = content.substring(i, i + 1);
+			if (!pChinese.matcher(one).matches()) {
+				chineseBuilder.append(one);
+			}
+		}
+		return chineseBuilder.toString();   
+    } 
+	
+	
+	private String getReqIp(HttpServletRequest request) {
+		String ip = request.getHeader("x-forwarded-for");
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("Proxy-Client-IP");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("WL-Proxy-Client-IP");
+		}
+		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getRemoteAddr();
+		}
+		return ip;
+	}
+	
+}

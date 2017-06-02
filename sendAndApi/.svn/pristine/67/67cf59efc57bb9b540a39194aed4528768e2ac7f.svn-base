@@ -1,0 +1,21 @@
+#===============================================================
+#   txin_test
+#===============================================================
+txin_sendUrl=http://121.41.34.132:48455/recieverOrderAdvanced 
+txin_queryUrl=http://121.41.34.132:48455/queryOrder 
+txin_id=
+txin_key=
+txin_sendBack=http://112.74.48.39:8080/zerogou/txin_callback.do
+#===============================================================
+#   txin_zhengshi
+#===============================================================
+#txin_sendUrl=
+#txin_queryUrl=
+#txin_id=
+#txin_key=
+#txin_sendBack=http://112.74.167.182:28083/txin_callback.do
+#txin_backUrl=http://xxxx/test_callback.do
+
+#testbackUrl
+
+#txin_backUrl=http://xxxx/txin_callback.do

@@ -1,0 +1,15 @@
+#===============================================================
+#  yangcong safe config
+#===============================================================
+
+yangcong_appid=wHqZMMtLDB5K1R73Id67QplIFqJ4eWrs
+yangcong_appkey=ma0ORcWihnPWlOund7Et
+yangcong_authid=agWr2SiINJ614MBsceXv
+yangcong_callback_url=http://data.admin.llczxt.com/yangcong_callback.do
+yangcong_bingding_url=https://api.yangcong.com/v2/qrcode_for_binding
+yangcong_offline_authorization_url=https://api.yangcong.com/v2/offline_authorization
+
+
+
+
+

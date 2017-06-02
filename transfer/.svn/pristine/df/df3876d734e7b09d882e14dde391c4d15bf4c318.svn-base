@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xinxing.transfer.dao.BossCustomerBalanceRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.xinxing.transfer.po.BossCustomerBalanceRecord" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="customerId" property="customerid" jdbcType="INTEGER" />
+    <result column="fundBalance" property="fundbalance" jdbcType="DECIMAL" />
+    <result column="costType" property="costtype" jdbcType="INTEGER" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="cost" property="cost" jdbcType="DECIMAL" />
+    <result column="recordTime" property="recordtime" jdbcType="TIMESTAMP" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="orderkey" property="orderkey" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, customerId, fundBalance, costType, remark, cost, recordTime, price, phone, orderkey
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.xinxing.transfer.po.BossCustomerBalanceRecordExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from boss_customer_balance_record
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+    <if test="pageStart != -1 and pageEnd != 0" >
+      limit ${pageStart},${pageEnd}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from boss_customer_balance_record
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from boss_customer_balance_record
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.xinxing.transfer.po.BossCustomerBalanceRecordExample" >
+    delete from boss_customer_balance_record
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.xinxing.transfer.po.BossCustomerBalanceRecord" >
+    insert into boss_customer_balance_record (id, customerId, fundBalance, 
+      costType, remark, cost, 
+      recordTime, price, phone, 
+      orderkey)
+    values (#{id,jdbcType=INTEGER}, #{customerid,jdbcType=INTEGER}, #{fundbalance,jdbcType=DECIMAL}, 
+      #{costtype,jdbcType=INTEGER}, #{remark,jdbcType=VARCHAR}, #{cost,jdbcType=DECIMAL}, 
+      #{recordtime,jdbcType=TIMESTAMP}, #{price,jdbcType=DECIMAL}, #{phone,jdbcType=VARCHAR}, 
+      #{orderkey,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xinxing.transfer.po.BossCustomerBalanceRecord" >
+    insert into boss_customer_balance_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="customerid != null" >
+        customerId,
+      </if>
+      <if test="fundbalance != null" >
+        fundBalance,
+      </if>
+      <if test="costtype != null" >
+        costType,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+      <if test="cost != null" >
+        cost,
+      </if>
+      <if test="recordtime != null" >
+        recordTime,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="orderkey != null" >
+        orderkey,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="customerid != null" >
+        #{customerid,jdbcType=INTEGER},
+      </if>
+      <if test="fundbalance != null" >
+        #{fundbalance,jdbcType=DECIMAL},
+      </if>
+      <if test="costtype != null" >
+        #{costtype,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="cost != null" >
+        #{cost,jdbcType=DECIMAL},
+      </if>
+      <if test="recordtime != null" >
+        #{recordtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="orderkey != null" >
+        #{orderkey,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.xinxing.transfer.po.BossCustomerBalanceRecordExample" resultType="java.lang.Integer" >
+    select count(*) from boss_customer_balance_record
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update boss_customer_balance_record
+    <set >
+      <if test="record.id != null" >
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.customerid != null" >
+        customerId = #{record.customerid,jdbcType=INTEGER},
+      </if>
+      <if test="record.fundbalance != null" >
+        fundBalance = #{record.fundbalance,jdbcType=DECIMAL},
+      </if>
+      <if test="record.costtype != null" >
+        costType = #{record.costtype,jdbcType=INTEGER},
+      </if>
+      <if test="record.remark != null" >
+        remark = #{record.remark,jdbcType=VARCHAR},
+      </if>
+      <if test="record.cost != null" >
+        cost = #{record.cost,jdbcType=DECIMAL},
+      </if>
+      <if test="record.recordtime != null" >
+        recordTime = #{record.recordtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.price != null" >
+        price = #{record.price,jdbcType=DECIMAL},
+      </if>
+      <if test="record.phone != null" >
+        phone = #{record.phone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.orderkey != null" >
+        orderkey = #{record.orderkey,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update boss_customer_balance_record
+    set id = #{record.id,jdbcType=INTEGER},
+      customerId = #{record.customerid,jdbcType=INTEGER},
+      fundBalance = #{record.fundbalance,jdbcType=DECIMAL},
+      costType = #{record.costtype,jdbcType=INTEGER},
+      remark = #{record.remark,jdbcType=VARCHAR},
+      cost = #{record.cost,jdbcType=DECIMAL},
+      recordTime = #{record.recordtime,jdbcType=TIMESTAMP},
+      price = #{record.price,jdbcType=DECIMAL},
+      phone = #{record.phone,jdbcType=VARCHAR},
+      orderkey = #{record.orderkey,jdbcType=VARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xinxing.transfer.po.BossCustomerBalanceRecord" >
+    update boss_customer_balance_record
+    <set >
+      <if test="customerid != null" >
+        customerId = #{customerid,jdbcType=INTEGER},
+      </if>
+      <if test="fundbalance != null" >
+        fundBalance = #{fundbalance,jdbcType=DECIMAL},
+      </if>
+      <if test="costtype != null" >
+        costType = #{costtype,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="cost != null" >
+        cost = #{cost,jdbcType=DECIMAL},
+      </if>
+      <if test="recordtime != null" >
+        recordTime = #{recordtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="price != null" >
+        price = #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="orderkey != null" >
+        orderkey = #{orderkey,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xinxing.transfer.po.BossCustomerBalanceRecord" >
+    update boss_customer_balance_record
+    set customerId = #{customerid,jdbcType=INTEGER},
+      fundBalance = #{fundbalance,jdbcType=DECIMAL},
+      costType = #{costtype,jdbcType=INTEGER},
+      remark = #{remark,jdbcType=VARCHAR},
+      cost = #{cost,jdbcType=DECIMAL},
+      recordTime = #{recordtime,jdbcType=TIMESTAMP},
+      price = #{price,jdbcType=DECIMAL},
+      phone = #{phone,jdbcType=VARCHAR},
+      orderkey = #{orderkey,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

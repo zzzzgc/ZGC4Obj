@@ -1,0 +1,5 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:39:04 GMT+08:00 2017
+maven-compiler-plugin-3.2.jar>central=
+maven-compiler-plugin-3.2.jar>nexus=
+maven-compiler-plugin-3.2.pom>nexus=

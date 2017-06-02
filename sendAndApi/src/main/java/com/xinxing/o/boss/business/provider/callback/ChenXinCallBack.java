@@ -1,0 +1,68 @@
+package com.xinxing.o.boss.business.provider.callback;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.boss.business.worker.domain.SupplierCallbackType;
+import com.xinxing.boss.common.db.CommonDao;
+
+@Controller
+public class ChenXinCallBack {
+	@Autowired
+	private com.xinxing.boss.business.worker.handle.a flowWorkerService;
+
+	@Autowired
+	private com.xinxing.boss.interaction.service.common.a flowCommonService;
+
+	@Autowired
+	private com.xinxing.boss.interaction.service.order.a flowOrderService;
+	
+	@Autowired
+	private com.xinxing.boss.interaction.service.provider.a flowProviderService;
+	
+	@Autowired
+	private CommonDao commonDao;
+
+	
+
+	/**
+	 * 中国移动回调处理(广东)
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	
+	@RequestMapping(value = "/chenxintele_callback.do")//回调地址 需要配置
+	public void teleComCallBack(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String outTradeNo = "HY0001";
+		String sign = "";//签名
+		String ts=""; //时间戳
+		String status="充值成功";
+		SendOrderResult result = null;
+/*		String bossId = "A123456" ;//上游 系统订单号
+		String orderId = "123456" ;//自有系统订单号
+*/		/*if (StringUtils.isNotBlank(postData)) {*/
+			// TODO 电信成功后业务处理
+			if (status.equals("4")) {// 充值成功
+				result = new SendOrderResult(SendOrderStatus.SUCCESS.status, null, outTradeNo);
+			} else {
+				String failReason = "回调错误";
+				result = new SendOrderResult(SendOrderStatus.FAILED.status, failReason, outTradeNo);
+			}
+			flowWorkerService.a(result, outTradeNo, status, SupplierCallbackType.OUR_ID);
+			PrintWriter pw = response.getWriter();
+			pw.print("OK");
+			pw.flush();
+			pw.close();
+	}
+}

@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:39:17 GMT+08:00 2017
+guava-15.0.pom>nexus=
+guava-15.0.jar>nexus=
+guava-15.0.jar>central=
+guava-15.0.pom>central=

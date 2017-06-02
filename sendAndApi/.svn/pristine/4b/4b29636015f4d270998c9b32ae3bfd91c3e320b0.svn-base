@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 用户模块配置. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+
+	<!-- 定时回调采购商 S -->
+	<bean id="customerCallBackScheduleService"
+		class="com.xinxing.o.boss.business.customer.callback.CustomerCallBackScheduleServiceImpl" />
+
+	<bean id="customerCallBackScheduleDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="customerCallBackScheduleService" />
+		</property>
+		<property name="targetMethod" value="doCallBackRequest" />
+		<property name="concurrent" value="false" /><!-- 作业不并发调度 -->
+	</bean>
+
+	<!-- 调度触发器 -->
+	<bean id="customerCallBackCronTriggerBean" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="customerCallBackScheduleDetail"></property>
+		<!-- 10分钟处理一次 -->
+		<property name="cronExpression" value="0 0/10 * * * ?"></property>
+	</bean>
+	<!-- 定时回调采购商 E -->
+	
+	<bean id="scheduleJob" class="com.xinxing.o.boss.business.provider.shcedule.ScheduleJobApiImpl"/>
+
+	<!--杭州易充宝 S -->
+	<bean id="hzycb_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="hzycb_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="hzycb_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="hzycb_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/20 * * * ?"></property>
+	</bean>
+	<!--杭州易充宝 E -->
+	<!--重庆电信 S -->
+	<bean id="justtest_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="justtest_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="justtest_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="justtest_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!--重庆电信 E -->		
+	<!--大boss宸信 S -->
+	<bean id="bigbosscx_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="bigbosscx_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="bigbosscx_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="bigbosscx_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!--大boss宸信 E -->		
+	<!--测试山东联通 S -->
+	<bean id="testsdlt_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="testsdlt_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="testsdlt_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="testsdlt_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!--测试山东联通 E -->	
+	
+	<!--yliang S -->
+	<bean id="yliang_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="yliang_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="yliang_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="yliang_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!--yliang E -->
+	
+	<!--测试zhiqu S-->
+	<bean id="zhiqu_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="zhiqu_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="zhiqu_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="zhiqu_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!-- 测试zhiqu E -->
+	
+	<!--MHAN S -->
+	<bean id="MHAN_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="MHAN_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="MHAN_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="MHAN_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!--MHAN E -->
+	
+	<!-- CYUE S -->
+	<bean id="cyue_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="cyue_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="cyue_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="cyue_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!-- CYUE E -->
+	
+	<!-- KDOU S -->
+	<bean id="kdou_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="kdou_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="kdou_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="kdou_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!-- KDOU E -->
+	
+	<!--测试JNLT S -->
+	<bean id="jNLT_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="jNLT_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="jNLT_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="jNLT_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!--测试JNLT E -->
+	
+	<!--TXIN S -->
+	<bean id="txin_JobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="txin_Job" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="txin_JobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="txin_JobDetail"></property>
+		<!-- 3分钟处理一次 -->
+		<property name="cronExpression" value="0 0/3 * * * ?"></property>
+	</bean>
+	<!--TXIN E -->
+	
+	<!-- demo_schedule_job-s -->
+	<bean id="demo_YD_ScheduleDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="scheduleJob" />
+		</property>
+		<property name="targetMethod" value="demoQuery_Job" />
+		<property name="concurrent" value="false" /><!-- 作业不并发调度 -->
+	</bean>
+
+	<!-- 调度触发器 -->
+	<bean id="demo_YD_CronTriggerBean" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="demo_YD_ScheduleDetail"></property>
+		<!-- 10分钟处理一次 -->
+		<property name="cronExpression" value="0 0/1 * * * ?"></property>
+	</bean>
+	<!-- demo_schedule_job-E -->
+
+	<!-- 调度工厂 -->
+	<bean id="addOrderFactoryBean"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<!-- 定时回调采购商 -->
+				<!-- <ref bean="customerCallBackCronTriggerBean" /> -->
+				<ref bean="demo_YD_CronTriggerBean" />
+				<!-- 杭州易充宝 -->
+				<ref bean="hzycb_JobTrigger" />
+				<!-- 重庆电信 -->
+				<ref bean="justtest_JobTrigger" />
+				<!-- 大boss宸信 -->
+				<ref bean="bigbosscx_JobTrigger" />
+				<!-- 测试山东联通 -->
+				<ref bean="testsdlt_JobTrigger" />
+				<!-- yliang -->
+				<ref bean="yliang_JobTrigger" />
+				<!-- 测试zhiqu -->
+				<ref bean="zhiqu_JobTrigger" />
+				<!-- MHAN -->
+				<ref bean="MHAN_JobTrigger" />
+				<!-- cyue -->
+				<ref bean="cyue_JobTrigger" />
+				<!-- kdou -->
+				<ref bean="kdou_JobTrigger" />
+				<!-- JNLT -->
+				<ref bean="jNLT_JobTrigger" />
+				<!-- TXIN -->
+				<ref bean="txin_JobTrigger" />
+			</list>
+		</property>
+	</bean>
+	
+	
+
+</beans>

@@ -1,0 +1,482 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<!--  
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<%@ include file="/WEB-INF/views/common/base/easyui.jsp"%>
+<script src="${ctx}/static/plugins/My97DatePicker/WdatePicker.js" type="text/javascript"></script>
+</head>
+<body style="font-family: '微软雅黑'">
+	<div id="top" style="height: 95%;color: green;position:absolute;top:0px;width: 100%;">
+		<div id="tb" style="padding:5px;height:auto">
+			<div>
+				<form id="searchFrom" action="">
+					<!-- 		采购商查询 start	 -->
+					<input type="hidden" name="createMenu" value="${reqMap.createMenu}" class="easyui-validatebox"
+						data-options="width:60,prompt: 'createMenu'" />
+					<input type="text" name="filter_EQS_downId" class="easyui-validatebox" data-options="width:150,prompt: '采购商订单号'" />
+					<!---		采购商查询 end		 -->
+					
+					<!---reqMap.todayStart}	  reqMap.todayEnd} -->
+					<div style="height: 7px;"></div>
+					<input id="d1" type="text" name="filter_GES_startTime" class="easyui-my97" 
+						startDate='%y-%M-%d 00:00:00' datefmt="yyyy-MM-dd HH:mm:ss" data-options="width:150,prompt: '${reqMap.todayStart}'" />
+					--
+					<input id="d2" type="text" name="filter_LES_startTime"  class="easyui-my97"
+						startDate='%y-%M-%d 23:59:59' datefmt="yyyy-MM-dd HH:mm:ss" data-options="width:150,prompt: '${reqMap.todayEnd}'" />
+					<input id="d3" type="text" name="filter_GES_endTime" class="easyui-my97" startDate='%y-%M-%d 00:00:00'
+						datefmt="yyyy-MM-dd HH:mm:ss" data-options="width:150,prompt: '充值结束时间'" />
+					--
+					<input id="d4" type="text" name="filter_LES_endTime" class="easyui-my97" startDate='%y-%M-%d 23:59:59'
+						datefmt="yyyy-MM-dd HH:mm:ss" data-options="width:150,prompt: '充值结束时间'" />
+					<!-- 		 产品查询	start		
+					<input type="hidden" name="filter_LIKES_typeFlow" class="easyui-validatebox" data-options="width:60,prompt: '产品名称'" />
+					
+					<input type="text" name="productStandard" class="easyui-validatebox" data-options="width:60,prompt: '产品规格'" />
+					 -->
+					<!-- 		 产品查询	end		 -->
+					
+					<div style="height: 7px;"></div>
+					<input type="text" name="filter_EQS_supplierId" class="easyui-validatebox" data-options="width:150,prompt: '供应商流水号'"
+						onchange="trimLeft(this)" />
+					<input type="text" name="filter_INS_phone" class="easyui-validatebox" data-options="width:120,prompt: '手机号码'" onchange="trimLeft(this)" />
+					订单状态：<select name="filter_EQI_status">
+						<option value="">请选择</option>
+						<c:forEach items="${applicationScope.sysParam.transferOrderStatusMap}" var="transferOrderStatusMap">
+							<option value="${transferOrderStatusMap.key}">${transferOrderStatusMap.value}</option>
+						</c:forEach>
+					</select> 
+					<!-- -->
+					<div style="height: 7px;"></div>
+					<a href="javascript(0)" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="cx()">查询</a> <span
+						class="toolbar-item dialog-tool-separator"></span>
+					<!-- 					<shiro:hasPermission name="boss:orderInfo:search"> -->
+					<!-- 					</shiro:hasPermission> -->
+					<input type="reset" value="重置" onclick="resetTime();clearHiddenValue();" />
+					&nbsp;&nbsp; <span class="toolbar-item dialog-tool-separator"></span>
+					<!-- 	 -->
+					<input type="hidden" id = "takeMsg" name="takeMsg" value="${sessionScope.takeMsg}" />
+				</form>
+				<div style="height: 7px;"></div>
+				<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-standard-page-excel" plain="true"
+					data-options="disabled:false" onclick="exportExcel()">导出Excel</a>
+			</div>
+
+		</div>
+		<table id="dg" style="width: 100%"></table>
+		<div id="dlg"></div>
+	</div>
+
+	<!-- 使用 flex-box css3属性平分DIV -->
+	<div id="bottom" style="height:5%;width:100%; position:absolute;bottom:0;">
+		<div style="display:-moz-box;display:-webkit-box;display:box;width:100%;">
+			<div>
+				<button onclick="getCountInfo()" id="countInfo">统计信息</button>
+			</div>
+			<div id="bottomLeft" style="-moz-box-flex:1.0;-webkit-box-flex:1.0;box-flex:1.0;"></div>
+			<shiro:hasPermission name="boss:orderInfo:showProfit">
+				<div id="bottomRight" style="-moz-box-flex:1.0;-webkit-box-flex:1.0;box-flex:1.0;border-left:3px solid white"></div>
+			</shiro:hasPermission>
+		</div>
+	</div>
+	<script type="text/javascript">
+		function testBotton() {
+			var row = dg.datagrid('getSelected');
+			if (row == null) {
+				$.messager.alert("请选择一行");
+				return;
+			}
+			var revTime = new Date(row.startTime).format("dd");
+			var todayTime = new Date().format("dd");
+			if (todayTime == revTime) {
+				revTime = "";
+			}
+			$.messager.alert(revTime + "XI" + row.id + "XP" + row.phone + "XT" + "XP" + row.successId + "XC"
+					+ row.customerId + "XS" + row.status + "XH" + row.handleStatus + "XPK" + row.providerKey);
+		}
+		var dg;
+		$(function() {
+			resetTime();
+			var mark = false;
+			var takeMsg = $('#takeMsg').val();
+
+		  //$.each( takeMsg, function(n,value){ 
+			  if('7' == takeMsg){
+				  mark = true;
+			  
+			  }    
+    	 // });
+			dg = $('#dg').datagrid(
+					{
+						method : "POST",
+						url : '${ctx}/boss/transferOrder/transferOrderList',
+						fit : true,
+						autoRowHeight : false,
+						fitColumns : true,
+						queryParams : $("#searchFrom").serializeObject(),
+						border : false,
+						striped : true,
+						onLoadSuccess : function() {
+							/* getBalckList(); */
+						},
+						idField : 'id',
+						pagination : true,
+						rownumbers : true,
+						pageNumber : 1,
+						pageSize : 20,
+						pageList : [
+								10, 20, 30, 40, 50, 100, 200
+						],
+						singleSelect : false,
+						columns : [
+							[
+									{ checkbox : true },
+									{ field : 'downId', title : '采购商订单号' },
+									{ field : 'supplierId', title : '供货商流水号' },
+									{ field : 'phone', title : '充值号码' },
+									{ field : 'status', title : '订单状态',formatter : function(value, row, index) {
+										//0异常 1成功 2失败 3等待
+										var returnVal = "";
+										if (value == "0") {
+											returnVal = "异常";
+										}else if(value == "1"){
+											returnVal = "成功";
+										}else if(value == "2"){
+											returnVal = "失败";
+										}else if(value == "3"){
+											returnVal = "等待";
+										}
+										return returnVal;
+									} },
+									{ field : 'typeFlow', title : '采购商产品名称',formatter : function(value, row, index) {
+										//100,广州,0,YD
+										var arr = value.split(",");
+										var operator = arr[3]=="YD" ? "移动" :( arr[3]=="LT" ? "联通" : "电信");
+										var area = arr[2]=="0" ? "省内" : "全国";
+										var returnVal = "";
+										returnVal = arr[1] + operator + arr[0] + "M" + area + "包";
+										var num = arr[0];
+										if(num.length == 4 || num.length == 5 ){
+											if('1024' == num) num = "1";
+											if('2048' == num) num = "2";
+											if('3072' == num) num = "3";
+											if('4096' == num) num = "4";
+											if('5120' == num) num = "5";
+											if('6144' == num) num = "6";
+											if("7168" == num) num = "7";
+											if("8192" == num) num = "8";
+											if("9216" == num) num = "9";
+											if("10240" == num) num = "10";
+											if("11264" == num) num = "11";
+											returnVal = arr[1] + operator + num + "G" + area + "包";
+										}
+										return returnVal;
+									} },
+									{ field : 'callbackAddress', title : '回调地址' },
+									{ field : 'startTime', title : '开始充值时间',formatter:function(value,row,index){
+											if(value != undefined){
+												return value.substring(0,19);
+											}
+											return value;
+									}},
+									{ field : 'endTime', title : '充值结束时间' ,formatter:function(value,row,index){
+											if(value != undefined){
+												return value.substring(0,19);
+											}
+											return value;
+									}},
+									{ field : 'callbackTime', title : '回调结束时间' ,formatter:function(value,row,index){
+											if(value != undefined){
+												return value.substring(0,19);
+											}
+											return value;
+									}},
+									{ field : 'callbackData', title : '回调数据' },
+							]
+						], enableHeaderClickMenu : false, enableHeaderContextMenu : false,
+						enableRowContextMenu : false, toolbar : '#tb' });
+		});
+		//时间戳转化为日期格式yyyy-MM-dd HH:mm:ss
+		function jsonTimeStamp(milliseconds) {
+			if (milliseconds != "" && milliseconds != null && milliseconds != "null") {
+				var datetime = new Date();
+				datetime.setTime(milliseconds);
+				var year = datetime.getFullYear();
+				var month = datetime.getMonth() + 1 < 10 ? "0" + (datetime.getMonth() + 1) : datetime.getMonth() + 1;
+				var date = datetime.getDate() < 10 ? "0" + datetime.getDate() : datetime.getDate();
+				var hour = datetime.getHours() < 10 ? "0" + datetime.getHours() : datetime.getHours();
+				var minute = datetime.getMinutes() < 10 ? "0" + datetime.getMinutes() : datetime.getMinutes();
+				var second = datetime.getSeconds() < 10 ? "0" + datetime.getSeconds() : datetime.getSeconds();
+				return year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second;
+			} else {
+				return "";
+			}
+
+		}
+		//获取当前的日期时间 格式“yyyy-MM-dd HH:MM:SS”
+		function getNowFormatDate(date) {
+			var seperator1 = "-";
+			var seperator2 = ":";
+			var month = date.getMonth() + 1;
+			var strDate = date.getDate();
+			if (month >= 1 && month <= 9) {
+				month = "0" + month;
+			}
+			if (strDate >= 0 && strDate <= 9) {
+				strDate = "0" + strDate;
+			}
+			var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate + " " + date.getHours()
+					+ seperator2 + date.getMinutes() + seperator2 + date.getSeconds();
+			return currentdate;
+		}
+		
+		//弹窗增加
+		function add() {
+			d = $("#dlg").dialog(
+					{ title : '添加配置', width : 380, height : 250, href : '${ctx}/boss/orderInfo/create',
+						maximizable : true, modal : true, buttons : [
+								{ text : '确认', handler : function() {
+									$("#mainform").submit();
+								} }, { text : '取消', handler : function() {
+									d.panel('close');
+								} }
+						] });
+		}
+		
+		//创建查询对象并查询
+		function cx() {
+			resetReceiveTimeIfEmpty();
+			var obj = $("#searchFrom").serializeObject();
+			dg.datagrid('reload', obj);
+			$("#bottomLeft").html("");
+			$("#bottomRight").html("");
+			dg.datagrid('clearSelections');
+		}
+
+		//格式化 关于钱的字段，例如单价，一口价等
+		function formaterMoney(value) {
+			var val = parseInt(value);
+			var vale = val / 100;
+			val = vale.toFixed(3);
+			return val;
+		}
+		function jumpToMainTabs(index) {
+			$('#dg').datagrid('clearSelections');
+			$('#dg').datagrid('selectRow', index);
+			var row = $('#dg').datagrid('getSelected');
+			mainTabs = parent.$("#mainTabs");
+			addTab('供货商信息', 'boss/providerInfo/list?id=' + row.successId);
+		}
+		function addTab(title, url) {
+			if (mainTabs.tabs('exists', title)) {
+				mainTabs.tabs('close', title);
+			}
+			var content = '<iframe scrolling="auto" frameborder="0"  src="' + url
+					+ '" style="width:100%;height:100%;"></iframe>';
+			mainTabs.tabs('add', { title : title, content : content, closable : true });
+
+		}
+		function getCountInfo() {
+			var countInfo = $("#countInfo");
+			countInfo.css('display', "none");
+			$("#bottomLeft").html("");
+			$("#bottomRight").html("");
+			var obj = $("#searchFrom").serializeObject();
+			$.ajax({
+				url : "${ctx}/boss/transferOrder/getCountInfo",
+				type : "POSt",
+				data : obj,
+				success : function(data) {
+					countInfo.css('display', "");
+					if (data != null) {
+						if (data.failReason != null) {
+							$("#bottomLeft").html(data.failReason);
+						} else {
+							var str1 = "总订单：" + data.totalNum + "笔<br/>成 &nbsp;&nbsp;功：" + data.successNum + "笔[平均耗时"
+									+ (data.successTime != null ? data.successTime.toFixed(2) : "")
+									+ "秒]<br>失 &nbsp;&nbsp;败：" + data.failNum + "笔[平均耗时"
+									+ (data.failTime != null ? data.failTime.toFixed(2) : "") + "秒]<br/>异 &nbsp;&nbsp;常："
+									+ data.exceptNum + "笔<br>等 &nbsp;&nbsp;待：" + data.waitNum + "笔";
+							$("#bottomLeft").html(str1);
+						}
+					}
+				}, error : function() {
+
+				} });
+		}
+		//重置时间
+		function resetTime() {
+			var filter_GED_startTime = $("input[name='filter_GED_startTime']");
+			var date = new Date();
+			date.setHours(0, 0, 0);
+			if ($("input[name='createMenu']").val() != null && $("input[name='createMenu']").val().length > 0) {
+				date.setHours(-24 * 10, 0, 0);
+			}
+			filter_GED_startTime.val(getNowFormatDate(date));
+			var filter_LED_startTime = $("input[name='filter_LED_startTime']");
+			var date = new Date();
+			date.setHours(24, 0, 0);
+			filter_LED_startTime.val(getNowFormatDate(date));
+		}
+		//如果startTime为空则默认为今天的0时0分0秒
+		function resetReceiveTimeIfEmpty() {
+			if ($("input[name='filter_GED_startTime']").val() != "") {
+				return;
+			}
+			var date = new Date();
+			date.setHours(0, 0, 0);
+			var filter_GED_startTime = $("input[name='filter_GED_startTime']");
+			filter_GED_startTime.val(getNowFormatDate(date));
+			date.setHours(24, 0, 0);
+			var filter_LED_startTime = $("input[name='filter_LED_startTime']");
+			filter_LED_startTime.val(getNowFormatDate(date));
+		}
+		//充值清空id的值 
+		function clearHiddenValue() {
+			//$("input[name=filter_EQI_customerId]").val("");
+		}
+		//刷新缓存
+		function flush(type) {
+			$.ajax({ url : "${ctx}/boss/orderInfo/flush", type : "post", data : { "type" : type },
+				success : function(data) {
+					successTip(data, dg);
+				}, error : function() {
+					successTip("刷新失败", dg);
+				}
+
+			});
+		}
+
+		//导出excel
+		function exportExcel() {
+			$.messager.confirm('提示', '确定要导出excel？', function(data) {
+				if (data) {
+					var obj = $("#searchFrom").serializeObject();
+					var url = "${ctx}/boss/transferOrder/exportExcel";
+					postDataByForm(url, obj);
+					// 					var params = "?";
+					// 							for ( var name in obj) {
+					// 								params += name + "=" + obj[name] + "&&";
+					// 							}
+					// 							console.debug("params:" + params);
+					// 							params = params.substring(0, params.length - 2);
+					// 							parent.$.messager.show({ title : "提示", msg : "导出需要时间，请稍等片刻！", position : "bottomRight" });
+					// 							url = url + params;
+					// 							window.location.href = url;
+
+				}
+			});
+		}
+		function postDataByForm(url, obj) {
+			var str = "";
+			for ( var name in obj) {
+				str += '<input type="text" name="'+name+'" value="'+obj[name]+'" />';
+			}
+			$('<form method="post" action="' + url + '">' + str + '</form>').appendTo('body').submit().remove();
+		}
+		//修改订单为手工处理状态
+		function callback(value) {
+
+			var ids = $('#dg').datagrid('getSelections');
+
+			if (ids.length < 1) {
+				alert("请至少选择一行数据!");
+				return;
+			}
+			var title = $(value).val();
+			var color = "green";
+			parent.$.messager.confirm('提示', '您确定要<span style="color:green;font-weight:bold;">' + title + '</span>吗?',
+					function(data) {
+						if (data) {
+							var list = new Array();
+							var j = 0;
+							for (var i = 0; i < ids.length; i++) {
+								if (ids[i].status != 1) {
+									$.messager.alert("只能选择新增的订单");
+									return;
+								} else {
+									list[j++] = ids[i].id;
+								}
+							}
+							console.log("list.size:" + list.length);
+
+							$.ajax({ url : "${ctx}/boss/orderInfo/updateOrderStatus", type : "post",
+								traditional : true, data : { "ids" : list }, success : function(data) {
+									successTip(data, dg);
+								}, error : function() {
+									successTip("发送失败", dg);
+								}
+
+							});
+						}
+					});
+		}
+
+		//获取黑名单列表
+		function getBalckList() {
+			$.ajax({ url : "${ctx}/boss/orderInfo/getBlackList", type : "get", success : function(data) {
+
+				if (data.state == "true") {
+					if (data.black > 0 || data.exception > 0) {
+						var msg = "今天一共有" + data.black + "个黑名单用户，" + data.exception + "个异常用户，请及时处理";
+						successTip(msg, dg);
+					}
+				}
+			}, error : function() {
+				successTip("发送失败", dg);
+			}
+
+			});
+		}
+
+		//获取当前时间与之前的时间之差
+		function getDintanceBetweenTwoTime(time) {
+			var date = new Date();
+			var newTime = date.getTime();
+			return parseInt((newTime - time) / 1000);
+		}
+
+		Date.prototype.format = function(format) {
+			var o = {
+			// month
+			"M+" : this.getMonth() + 1,
+			// day
+			"d+" : this.getDate(),
+			// hour
+			"h+" : this.getHours(),
+			// minute
+			"m+" : this.getMinutes(),
+			// second
+			"s+" : this.getSeconds(),
+			// quarter
+			"q+" : Math.floor((this.getMonth() + 3) / 3),
+			// millisecond
+			"S" : this.getMilliseconds() };
+			if (/(y+)/.test(format) || /(Y+)/.test(format)) {
+				format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+			}
+			for ( var k in o) {
+				if (new RegExp("(" + k + ")").test(format)) {
+					format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k])
+							.substr(("" + o[k]).length));
+				}
+			}
+			return format;
+		};
+
+		function timestampformat(timestamp) {
+			return (new Date(timestamp)).format("yyyy-MM-dd hh:mm:ss");
+		}
+
+		function getSuccessIdBySelect() {
+			var successId = $("select[name=successId] option:selected").val();
+			$("input[name=filter_EQI_successId]").val(successId);
+		}
+	</script>
+
+</body>
+</html>

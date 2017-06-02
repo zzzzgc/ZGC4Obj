@@ -1,0 +1,8 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Wed Apr 05 14:44:20 GMT+08:00 2017
+joda-time-2.7-sources.jar>nexus=
+joda-time-2.7.pom>nexus=
+joda-time-2.7.jar>central=
+joda-time-2.7-javadoc.jar>public=
+joda-time-2.7.pom>central=
+joda-time-2.7.jar>nexus=

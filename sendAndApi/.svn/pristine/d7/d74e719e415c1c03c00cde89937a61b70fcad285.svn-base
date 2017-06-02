@@ -1,0 +1,22 @@
+#===============================================================
+#   dli_test
+#===============================================================
+#dli_sendUrl=http://119.147.44.148/index.php/Api/Order/flow
+#dli_queryUrl=http://119.147.44.146/index.php/Api/Order/order_search
+#dli_account=hxfs
+#dli_password=hxfs666
+#dli_key=@888
+#dli_callback=http://106.14.18.108:28083/dli_callback.do
+#===============================================================
+#   dli_zhengshi
+#===============================================================
+dli_sendUrl=http://119.147.44.148/index.php/Api/Order/flow
+dli_queryUrl=http://119.147.44.146/index.php/Api/Order/order_search
+dli_account=hxfs
+dli_password=hxfs666
+dli_key=@888
+dli_callback=http://send.zerogou.com/dli_callback.do
+#===============================================================
+#testbackUrl
+
+#dli_backUrl=http://xxxx/dli_callback.do

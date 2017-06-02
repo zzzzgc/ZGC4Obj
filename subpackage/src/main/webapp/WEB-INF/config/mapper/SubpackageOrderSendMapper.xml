@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xinxing.subpackage.data.dao.SubpackageOrderSendMapper" >
+  <resultMap id="BaseResultMap" type="com.xinxing.subpackage.data.po.SubpackageOrderSend" >
+    <id column="orderId" property="orderid" jdbcType="VARCHAR" />
+    <id column="sendOrderId" property="sendorderid" jdbcType="VARCHAR" />
+    <result column="flowPackSize" property="flowpacksize" jdbcType="INTEGER" />
+    <result column="whichPack" property="whichpack" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="startTime" property="starttime" jdbcType="TIMESTAMP" />
+    <result column="endTime" property="endtime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    orderId, sendOrderId, flowPackSize, whichPack, status, startTime, endTime
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderSendExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from subpackage_order_send
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderSendKey" >
+    select 
+    <include refid="Base_Column_List" />
+    from subpackage_order_send
+    where orderId = #{orderid,jdbcType=VARCHAR}
+      and sendOrderId = #{sendorderid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderSendKey" >
+    delete from subpackage_order_send
+    where orderId = #{orderid,jdbcType=VARCHAR}
+      and sendOrderId = #{sendorderid,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderSendExample" >
+    delete from subpackage_order_send
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderSend" >
+    insert into subpackage_order_send (orderId, sendOrderId, flowPackSize, 
+      whichPack, status, startTime, 
+      endTime)
+    values (#{orderid,jdbcType=VARCHAR}, #{sendorderid,jdbcType=VARCHAR}, #{flowpacksize,jdbcType=INTEGER}, 
+      #{whichpack,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, #{starttime,jdbcType=TIMESTAMP}, 
+      #{endtime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderSend" >
+    insert into subpackage_order_send
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="orderid != null" >
+        orderId,
+      </if>
+      <if test="sendorderid != null" >
+        sendOrderId,
+      </if>
+      <if test="flowpacksize != null" >
+        flowPackSize,
+      </if>
+      <if test="whichpack != null" >
+        whichPack,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="starttime != null" >
+        startTime,
+      </if>
+      <if test="endtime != null" >
+        endTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="orderid != null" >
+        #{orderid,jdbcType=VARCHAR},
+      </if>
+      <if test="sendorderid != null" >
+        #{sendorderid,jdbcType=VARCHAR},
+      </if>
+      <if test="flowpacksize != null" >
+        #{flowpacksize,jdbcType=INTEGER},
+      </if>
+      <if test="whichpack != null" >
+        #{whichpack,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="starttime != null" >
+        #{starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endtime != null" >
+        #{endtime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderSendExample" resultType="java.lang.Integer" >
+    select count(*) from subpackage_order_send
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update subpackage_order_send
+    <set >
+      <if test="record.orderid != null" >
+        orderId = #{record.orderid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sendorderid != null" >
+        sendOrderId = #{record.sendorderid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.flowpacksize != null" >
+        flowPackSize = #{record.flowpacksize,jdbcType=INTEGER},
+      </if>
+      <if test="record.whichpack != null" >
+        whichPack = #{record.whichpack,jdbcType=INTEGER},
+      </if>
+      <if test="record.status != null" >
+        status = #{record.status,jdbcType=INTEGER},
+      </if>
+      <if test="record.starttime != null" >
+        startTime = #{record.starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.endtime != null" >
+        endTime = #{record.endtime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update subpackage_order_send
+    set orderId = #{record.orderid,jdbcType=VARCHAR},
+      sendOrderId = #{record.sendorderid,jdbcType=VARCHAR},
+      flowPackSize = #{record.flowpacksize,jdbcType=INTEGER},
+      whichPack = #{record.whichpack,jdbcType=INTEGER},
+      status = #{record.status,jdbcType=INTEGER},
+      startTime = #{record.starttime,jdbcType=TIMESTAMP},
+      endTime = #{record.endtime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderSend" >
+    update subpackage_order_send
+    <set >
+      <if test="flowpacksize != null" >
+        flowPackSize = #{flowpacksize,jdbcType=INTEGER},
+      </if>
+      <if test="whichpack != null" >
+        whichPack = #{whichpack,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="starttime != null" >
+        startTime = #{starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endtime != null" >
+        endTime = #{endtime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where orderId = #{orderid,jdbcType=VARCHAR}
+      and sendOrderId = #{sendorderid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderSend" >
+    update subpackage_order_send
+    set flowPackSize = #{flowpacksize,jdbcType=INTEGER},
+      whichPack = #{whichpack,jdbcType=INTEGER},
+      status = #{status,jdbcType=INTEGER},
+      startTime = #{starttime,jdbcType=TIMESTAMP},
+      endTime = #{endtime,jdbcType=TIMESTAMP}
+    where orderId = #{orderid,jdbcType=VARCHAR}
+      and sendOrderId = #{sendorderid,jdbcType=VARCHAR}
+  </update>
+</mapper>

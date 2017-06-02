@@ -1,0 +1,5 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Fri Feb 17 10:56:47 GMT+08:00 2017
+http\://xxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact org.apache.poi\:poi\:jar\:sources\:3.8 from/to public (http\://xxxxx\:8081/nexus/content/groups/public/)\: xxxxx
+@default-public-http\://xxxxx\:8081/nexus/content/groups/public/.lastUpdated=1487300201677
+https\://repo.maven.apache.org/maven2/.lastUpdated=1487300207604

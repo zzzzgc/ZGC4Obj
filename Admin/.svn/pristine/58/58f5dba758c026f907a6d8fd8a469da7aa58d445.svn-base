@@ -1,0 +1,14 @@
+#===============================================================
+#  tmall config
+#===============================================================
+loginFilterStrs=login,static,/yc/,/test,logout,views/error,chain.doFilter,yangcong_callback,websocket,upload,createMenu,boss/common,common/list
+
+aopFilterStrs=getBlackCount,getExceptionCount,search,get,getRoleMenus,getUser,getAll
+
+
+
+
+
+
+
+

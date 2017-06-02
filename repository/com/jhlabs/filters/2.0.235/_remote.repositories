@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:39:00 GMT+08:00 2017
+filters-2.0.235.pom>nexus=
+filters-2.0.235.jar>central=
+filters-2.0.235.jar>nexus=
+filters-2.0.235.pom>central=

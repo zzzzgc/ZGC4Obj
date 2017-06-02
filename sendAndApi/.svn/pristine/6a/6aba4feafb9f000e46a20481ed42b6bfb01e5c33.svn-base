@@ -1,0 +1,7 @@
+#===============================================================
+#   MHAN
+#===============================================================
+MHAN_Url=http://ll.gzmhhlw.com/api/v1.php
+MHAN_userName=5N765W92JJ
+MHAN_key=AXGUTEUEJVSCW6GSWTI2ATPFBCAU27G2
+MHAN_callback=http://send.zerogou.com/MHAN_callback.do

@@ -1,0 +1,223 @@
+package com.xinxing.o.boss.business.provider.api.chinatelecom;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.o.boss.business.provider.other.bigbosscx.api.BigbosscxSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.cyue.api.CYUESendApiImpl;
+import com.xinxing.o.boss.business.provider.other.dli.api.DLiSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.fb.api.FBSendAndApiimpl;
+import com.xinxing.o.boss.business.provider.other.hquan.api.HquanSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.hzycb.api.HzycbSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.jnlt.api.JNLTSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.josy.api.JOSYSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.justtest.api.JusttestSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.kdou.api.KdouSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.lliu.api.LliuSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.mchuan.api.MCHUANSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.mhan.api.MHANSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.qgdx.api.QGDXSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.qws.api.QwsSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.testsdlt.api.TestsdltSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.txin.api.TXINSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.xcheng.api.XChengSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.yliang.api.YliangSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.yshang.api.YshangSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.zhiqutest.api.ZhiQuTestSendApiImpl;
+public class TeleComSendApiImpl implements TeleComSendApi {
+	@Autowired
+	private HzycbSendApiImpl hzycbSendApi;
+	@Autowired
+	private JusttestSendApiImpl justtestSendApi;
+	@Autowired
+	private BigbosscxSendApiImpl bigbosscxSendApi;
+	@Autowired
+	private TestsdltSendApiImpl testsdltSendApi;
+	@Autowired
+	private YliangSendApiImpl  yliangSendApi;
+	@Autowired
+	private ZhiQuTestSendApiImpl zhiQuTestSendApi;
+	@Autowired
+	private YshangSendApiImpl yshangSendApi;
+	@Autowired
+	private MHANSendApiImpl mhanSendApi;
+	@Autowired
+	private CYUESendApiImpl cyueSendApi;
+	@Autowired
+	private KdouSendApiImpl kdouSendApi;
+	@Autowired
+	private MCHUANSendApiImpl mchuanSendApi;
+	@Autowired
+	private JNLTSendApiImpl jNLTSendApi;
+	@Autowired
+	private TXINSendApiImpl txinSendApi;
+	@Autowired
+	private LliuSendApiImpl lliuSendApi;
+	@Autowired
+	private JOSYSendApiImpl josySendApi;
+	@Autowired
+	private QGDXSendApiImpl qgdxSendApi;
+	@Autowired
+	private HquanSendApiImpl hquanSendApi;
+	@Autowired
+	private FBSendAndApiimpl fbSendAndApi;
+	@Autowired
+	private QwsSendApiImpl qwsSendApi;
+	@Autowired
+	private DLiSendApiImpl dLiSendApi;
+	@Autowired
+	private XChengSendApiImpl xChengSendApi;
+	
+	@Override
+	public SendOrderResult send(SendOrderInfo sendOrderInfo) {
+		String supplier = sendOrderInfo.getSupplier();
+		TeleComSendApiCode apiCode = Enum.valueOf(TeleComSendApiCode.class, supplier);
+		SendOrderResult result = null;
+		if (apiCode == null) {
+			return new SendOrderResult(SendOrderStatus.FAILED.status, "没有匹配的供货商-请检查产品与手机号", null);
+		}
+		switch (apiCode) {
+		case HZYCB_DX:
+			result = hzycbSendApi.send(sendOrderInfo);
+			break;
+		case JUSTTEST_DX:
+			result = justtestSendApi.send(sendOrderInfo);
+			break;
+		case BIGBOSSCX_DX:
+			result = bigbosscxSendApi.send(sendOrderInfo);
+			break;
+		case TESTSDLT_DX:
+			result = testsdltSendApi.send(sendOrderInfo);
+			break;
+		case YLIANG_DX:
+			result = yliangSendApi.send(sendOrderInfo);
+			break;
+		case YSHANG_DX:
+			result = yshangSendApi.send(sendOrderInfo);
+			break;
+		case MHAN_DX:
+			result = mhanSendApi.send(sendOrderInfo);
+			break;
+		case ZHIQU_DX :
+			result = zhiQuTestSendApi.send(sendOrderInfo);
+			break;
+		case CYUE_DX :
+			result = cyueSendApi.send(sendOrderInfo);
+			break;
+		case KDOU_DX :
+			result = kdouSendApi.send(sendOrderInfo);
+			break;
+		case MCHUAN_DX :
+			result = mchuanSendApi.send(sendOrderInfo);
+			break;
+		case JNLT_DX :
+			result = jNLTSendApi.send(sendOrderInfo);
+			break;
+		case TXIN_DX :
+			result = txinSendApi.send(sendOrderInfo);
+			break;
+		case LLIU_DX :
+			result = lliuSendApi.send(sendOrderInfo);
+			break;
+		case JOSY_DX :
+			result = josySendApi.send(sendOrderInfo);
+			break;
+		case QGDX_DX :
+			result = qgdxSendApi.send(sendOrderInfo);
+			break;
+		case HQUAN_DX :
+			result = hquanSendApi.send(sendOrderInfo);
+			break;
+		case FB_DX:
+			result = fbSendAndApi.send(sendOrderInfo);
+			break;
+		case QWS_DX:
+			result = qwsSendApi.send(sendOrderInfo);
+			break;
+		case DLI_DX:
+			result = dLiSendApi.send(sendOrderInfo);
+			break;
+		case XCHENG_DX:
+			result = xChengSendApi.send(sendOrderInfo);
+			break;
+		}
+		return result;
+	}
+
+	@Override
+	public SendOrderResult query(SendOrderInfo sendOrderInfo) {
+		String supplier = sendOrderInfo.getSupplier();
+		SendOrderResult result = null;
+		TeleComSendApiCode apiCode = Enum.valueOf(TeleComSendApiCode.class, supplier);
+		if (apiCode == null) {
+			return new SendOrderResult(SendOrderStatus.FAILED.status, "没有匹配的供货商-请检查产品与手机号", null);
+		}
+		switch (apiCode) {
+		case HZYCB_DX:
+			result = hzycbSendApi.query(sendOrderInfo);
+			break;
+		case JUSTTEST_DX:
+			result = justtestSendApi.query(sendOrderInfo);
+			break;
+		case BIGBOSSCX_DX:
+			result = bigbosscxSendApi.query(sendOrderInfo);
+			break;
+		case TESTSDLT_DX:
+			result = testsdltSendApi.query(sendOrderInfo);
+			break;
+		case YLIANG_DX:
+			result = yliangSendApi.query(sendOrderInfo);
+			break;
+		case ZHIQU_DX:
+			result = zhiQuTestSendApi.query(sendOrderInfo);
+			break;
+		case YSHANG_DX:
+			result = yshangSendApi.query(sendOrderInfo);
+			break;
+		case MHAN_DX:
+			result = mhanSendApi.query(sendOrderInfo);
+			break;
+		case CYUE_DX:
+			result = cyueSendApi.query(sendOrderInfo);
+			break;
+		case KDOU_DX:
+			result = kdouSendApi.query(sendOrderInfo);
+			break;
+		case MCHUAN_DX :
+			result = mchuanSendApi.query(sendOrderInfo);
+			break;
+		case JNLT_DX :
+			result = jNLTSendApi.query(sendOrderInfo);
+			break;
+		case TXIN_DX :
+			result = txinSendApi.query(sendOrderInfo);
+			break;
+		case LLIU_DX :
+			result = lliuSendApi.query(sendOrderInfo);
+			break;
+		case JOSY_DX :
+			result = josySendApi.query(sendOrderInfo);
+			break;
+		case QGDX_DX :
+			result = qgdxSendApi.query(sendOrderInfo);
+			break;
+		case HQUAN_DX :
+			result = hquanSendApi.query(sendOrderInfo);
+			break;
+		case QWS_DX:
+			result = qwsSendApi.query(sendOrderInfo);
+			break;
+		case DLI_DX:
+			result = dLiSendApi.query(sendOrderInfo);
+			break;
+		case XCHENG_DX:
+			result = xChengSendApi.query(sendOrderInfo);
+			break;
+		}
+		
+		return result;
+	}
+
+}

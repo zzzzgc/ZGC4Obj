@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:38:00 GMT+08:00 2017
+junit-4.8.1.jar>central=
+junit-4.8.1.pom>central=
+junit-4.8.1.pom>nexus=
+junit-4.8.1.jar>nexus=

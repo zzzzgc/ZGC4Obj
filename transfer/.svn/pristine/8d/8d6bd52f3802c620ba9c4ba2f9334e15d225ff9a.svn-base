@@ -1,0 +1,103 @@
+package com.xinxing.transfer.cmd;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.BreakIterator;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.xinxing.flow.core.downstream.TransferDownstream;
+import com.xinxing.transfer.common.resource.Constants;
+
+/**
+ * 中央控制台中转站(动态回调AND转发站,提单查单站) CQ专用----华屹开发 
+ * 2017-03-16
+ * @author ZGC
+ * @version 1.0.0V
+ */
+@Controller
+@RequestMapping(value = "/CQExclusive")
+public class TransferCmd {
+	private static final Logger LOGGER = Logger.getLogger("CQ_TransferProscenium");
+
+	@Autowired
+	TransferDownstream transfer4CQ_down;
+
+	/**
+	 * 帮CQ发单 AA->BB
+	 * @return
+	 */
+	@RequestMapping(value = "/flowReq.do", method = RequestMethod.POST)
+	public void sendOrder(HttpServletRequest request, HttpServletResponse response) {
+		String need = request.getParameter("INTECMD");
+		String ip = request.getRemoteAddr();
+		String allowIp = Constants.getString("CQ_allowIp");
+		response.setHeader("accept", "*/*");
+		//response.setCharacterEncoding("GBK");
+		response.setContentType("text/html; charset=gbk");
+		response.setHeader("connection", "Keep-Alive");
+		response.setHeader("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+		LOGGER.info("请求ip！" + ip);
+		if (!allowIp.contains(ip)) {
+			LOGGER.info("请求ip未授权！！！" + ip);
+			try (PrintWriter pw = response.getWriter();){
+				pw.write("请求ip未授权！！！" + ip);
+			} catch (IOException e) {
+				LOGGER.error(e);
+			}
+			return;
+		}
+		if (need != null) {
+			switch (need) {
+			case "LLCZ":// 提单
+				transfer4CQ_down.sendOrder(request, response);
+				break;
+			case "DDCX":// 查询
+				transfer4CQ_down.queryOrder(request, response);
+				break;
+			case "YECX":// 余额查询
+				transfer4CQ_down.queryBalance(request, response);
+				break;
+			default:
+				/*transfer4CQ_down.download(request, response);*/
+				// 设置响应体
+				PrintWriter out = null;
+				try {
+					LOGGER.info("接口访问,对方没有接口套接字或套接字错误!!");
+					out = response.getWriter();
+					out.append("接口套接字不存在或未开通该接口");
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					if (out != null) {
+						out.close();
+					}
+				}
+				break;
+			}
+		} else {
+			//transfer4CQ_down.download(request, response);
+			PrintWriter out = null;
+			try {
+				out = response.getWriter();
+				String string = "没有INTECMD在文件头,或为空为未规定字段";
+				out.println(string);
+			} catch (IOException e) {
+				LOGGER.error("接口获取响应写出流异常");
+			} finally {
+				out.close();
+			}
+		}
+		
+		//TODO 待处理, 查询结果后刷新订单结束时间  每查一次刷新一次
+		
+	}
+
+}

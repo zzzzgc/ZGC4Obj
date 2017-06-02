@@ -1,0 +1,80 @@
+package com.xinxing.o.boss.business.provider.api.chinatelecom;
+
+public enum TeleComSendApiCode {
+	/**
+	 * 杭州易充宝
+	 */
+	HZYCB_DX("HZYCB_DX"),
+	/**
+	 * 重庆电信
+	 */
+	JUSTTEST_DX("JUSTTEST_DX"),
+	/**
+	 * 大boss宸信
+	 */
+	BIGBOSSCX_DX("BIGBOSSCX_DX"),
+	/**
+	 * 测试山东联通
+	 */
+	TESTSDLT_DX("TESTSDLT_DX"),
+	/**
+	 * 我的联通
+	 */
+	TESTWODO_DX("TESTWODO_DX"),
+	/**
+	 * YLIANG
+	 */
+	YLIANG_DX("YLIANG_YD"),
+	/**
+	 * ZHIQU
+	 */
+	ZHIQU_DX("ZHIQU_DX"),
+	/**
+	 * MHAN
+	 */
+	MHAN_DX("MHAN_DX"),
+	/**
+	 * KDOU
+	 */
+	KDOU_DX("KDOU_DX"),
+	/**
+	 * CYUE
+	 */
+	CYUE_DX("CYUE_DX"),
+	/**
+	 * YSHANG
+	 */
+	YSHANG_DX("YSHANG_DX"),
+	/**
+	 * MCHUAN
+	 */
+	MCHUAN_DX("MCHUAN_DX"),
+	/**
+	 * JNLT
+	 */
+	JNLT_DX("JNLT_DX"),
+	/**
+	 * TXIN_DX
+	 */
+	TXIN_DX("TXIN_DX"),
+	/**
+	 * LLIU
+	 */
+	LLIU_DX("LLIU_DX"),
+	/**
+	 * JOSY
+	 */
+	JOSY_DX("JOSY_DX"),
+	/**
+	 * QGDX_DX
+	 */
+	QGDX_DX("QGDX_DX")
+	;
+
+	public String apiCode;
+
+	private TeleComSendApiCode(String apiCode) {
+		this.apiCode = apiCode;
+	}
+
+}

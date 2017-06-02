@@ -1,0 +1,205 @@
+package com.xinxing.o.boss.business.provider.other.cyue.api;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.boss.interaction.pojo.common.ProductCategoryInfo;
+import com.xinxing.boss.interaction.pojo.customer.OrderInfo;
+import com.xinxing.o.boss.business.provider.api.supplier.api.SendApi;
+import com.xinxing.o.boss.business.provider.other.cyue.util.CYUEUtil;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.util.FlowQueryLogUtils;
+import com.xinxing.o.boss.common.util.FlowSendLogUtils;
+import com.xinxing.o.boss.common.util.FlowUtils;
+
+public class CYUESendApiImpl implements SendApi {
+	private static Logger log = Logger.getLogger(CYUESendApiImpl.class);
+	@Autowired
+	private com.xinxing.boss.interaction.service.order.a flowOrderService;
+	@Autowired
+	private com.xinxing.boss.interaction.service.common.a flowCommonService;
+	/*响应参数
+	字段	  		         类型           	是否为空  	说明      	  	        
+	result		  string  not null  结果码		  
+	order_id	  string  	 		 订单id
+	out_order_id  string  not null  接入方订单id  not null
+	ext_data	  object   		            扩展数据，用于流量红包等
+	如：	{
+		    "result": "0", 
+		    "order_id": "160422193340000000", 
+		    "out_order_id": "1234567", 
+		    "ext_data": {
+				        	"category": "iFlowRedEnvelop", 
+				        	"data": {
+							            "id": "323435", 
+							            "url": "http://1235.10086.cn/xxx", 
+							            "flow_pkg": "1G", 
+							            "flow_val": "1024", 
+							            "expired_time": "20160930"
+				        			 }
+		    			}
+		}
+	*/	
+	@Override
+	public SendOrderResult send(SendOrderInfo sendOrderInfo) {
+		SendOrderResult result = null;
+		String orderid = sendOrderInfo.getOrderId();
+		String orderId = FlowUtils.getOrderId(orderid);
+		OrderInfo orderInfo = flowOrderService.j(Integer.parseInt(orderId));
+		ProductCategoryInfo categoryInfo = null;
+		if (orderInfo != null) {
+			categoryInfo = flowCommonService.g(orderInfo.getCategoryId());
+		}
+		// 0本省 1全国
+		int area = categoryInfo.getArea();
+		String categoryName = categoryInfo.getCategoryName();
+		try {
+			String sendStr = CYUEUtil.getSendStr(sendOrderInfo, area, categoryName);
+			String sendUrl = Constants.getString("cyue_sendUrl");
+			//获取订单发送日志
+			FlowSendLogUtils.sendReqLog(log, orderid, sendUrl+";"+sendStr);
+			//发送post请求后获取返回信息
+			String getResp = HttpUtils.sendPostByNameValue(sendUrl,sendStr);
+			//获取订单返回日志
+			FlowSendLogUtils.sendResLog(log, orderid, getResp);
+			if (StringUtils.isNotBlank(getResp)) {
+				JSONObject obj = JSON.parseObject(getResp);
+				String provider_result = obj.getString("result");
+				String theirOrderId = obj.getString("order_id");
+				String msg = CYUEUtil.getErrorMsg(provider_result);
+				if ("0".equals(provider_result)) {
+					result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,theirOrderId);
+				}else if ("-6".equals(provider_result)) { //余额不足转手工
+					result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,CYUEUtil.getErrorMsg(provider_result),theirOrderId);
+				}else{
+					result = new SendOrderResult(SendOrderStatus.FAILED .status,msg,theirOrderId);
+				}
+			}else {
+				result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,"订单返回为空",null);
+			}
+		} catch (Exception e) {
+			result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "系统异常,请找技术人员", orderid);
+			FlowSendLogUtils.sendExceptionLog(log, sendOrderInfo.getOrderId(), e);
+		}
+		return result;
+	}
+	
+	/*
+	响应参数
+	字段	  	类型           	是否为空  	   说明     
+	result	string	not null 结果码		
+	data	json			   查询结果数据	\
+	例（查询成功）：{
+			   "result": "0",
+			   "data": "
+			          [
+			            {
+			               "order_id": 160826134221063000, 	 	      订单号
+			               "out_order_id": "160826134215146001",  外部订单号
+			               "phone_no": "15073866214", 			      手机号	
+			               "status": 2, 					                  订单状态
+			               "report_time": 20160826101712, 	状态报告时间，格式yyyyMMddHHmmss
+			               "err_desc": null
+			             }, 
+			             {
+			               "order_id": 160826154233002020, 
+			               "out_order_id": "160826154232780001", 
+			               "phone_no": "13772017660", 
+			               "status": 3, 
+			               "report_time": 20160826101712, 
+			               "err_desc": ""
+			              }
+			          ]"
+	 	 	  	}
+	 	订单不存在：{ "result":"-10"}
+	*/	
+	@Override
+	public Map<String, SendOrderResult> querys(List<SendOrderInfo> sendOrderInfos) {
+		Map<String,SendOrderResult> resultMap = new HashMap<>();
+		SendOrderResult result = null;
+		for (SendOrderInfo sendOrderInfo : sendOrderInfos) {
+			String orderId = sendOrderInfo.getOrderId();
+			String supplierOrderId = sendOrderInfo.getSupplierOrderId();
+			String newOrderId = FlowUtils.getOrderId(orderId);
+			OrderInfo orderInfo = flowOrderService.j(Integer.parseInt(newOrderId));
+			ProductCategoryInfo categoryInfo = null;
+			if (orderInfo != null) {
+				categoryInfo = flowCommonService.g(orderInfo.getCategoryId());
+			}
+			// 0本省 1全国
+			int area = categoryInfo.getArea();
+			String categoryName = categoryInfo.getCategoryName();
+			try {
+				String queryStr = CYUEUtil.getQueryStr(sendOrderInfo, area, categoryName);
+				String queryUrl = Constants.getString("cyue_queryUrl");
+				//获取订单查询日志
+				FlowQueryLogUtils.queryReqLog(log, orderId, queryUrl+";"+queryStr);
+				String jsonStr = HttpUtils.sendPostByNameValue(queryUrl,queryStr);
+				//获取订单返回日志
+				FlowQueryLogUtils.queryResLog(log, orderId, jsonStr);
+				if (StringUtils.isNotBlank(jsonStr)) {
+					JSONObject obj = JSON.parseObject(jsonStr);
+					String providerResult = obj.getString("result");
+					String msg = CYUEUtil.getErrorMsg(providerResult);
+					if ("0".equals(providerResult)) {
+						String theirOrderId = obj.getJSONArray("data").getJSONObject(0).getString("order_id");
+						String status = obj.getJSONArray("data").getJSONObject(0).getString("status");
+						switch (status ) {		// 0-待充值，1-已充值，2-充值成功，3-充值失败，4-未知
+							case "0":
+								result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,theirOrderId);
+								break;
+							case "1":
+								result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,theirOrderId);
+								break;
+							case "2":
+								result = new SendOrderResult(SendOrderStatus.SUCCESS.status,null,theirOrderId);
+								break;
+							case "3":
+								result = new SendOrderResult(SendOrderStatus.FAILED.status,msg,theirOrderId);
+								break;
+							default:
+								result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,theirOrderId);
+								break;
+						}
+					}else if ("-6".equals(providerResult)) { //余额不足转手工
+						result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,msg,supplierOrderId);
+					}else {
+						result = new SendOrderResult(SendOrderStatus.FAILED.status,msg,supplierOrderId);
+					}
+				}else {
+					result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,"查询返回为空",supplierOrderId);
+				}
+			} catch (Exception e) {
+				result= new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "系统异常,请找技术人员", supplierOrderId);
+				FlowQueryLogUtils.queryExceptionLog(log,orderId, e);
+			}
+			
+			resultMap.put(orderId,result);
+		}
+		return resultMap;
+	}
+
+	@Override
+	public SendOrderResult query(SendOrderInfo sendOrderInfo) {
+		List<SendOrderInfo> queryList = new ArrayList<>();
+		queryList.add(sendOrderInfo);
+		Map<String, SendOrderResult> resultMap = querys(queryList);
+		if (resultMap != null) {
+			return resultMap.get(sendOrderInfo.getOrderId());
+		}
+		return null;
+	}
+
+}

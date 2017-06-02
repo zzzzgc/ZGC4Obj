@@ -1,0 +1,214 @@
+package com.xinxing.o.boss.business.provider.api.chinamobile;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.o.boss.business.provider.other.bigbosscx.api.BigbosscxSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.bigbosscxhf.api.BigbosscxhfSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.cyue.api.CYUESendApiImpl;
+import com.xinxing.o.boss.business.provider.other.hquan.api.HquanSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.hzycb.api.HzycbSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.jnlt.api.JNLTSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.josy.api.JOSYSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.justtest.api.JusttestSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.kdou.api.KdouSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.lliu.api.LliuSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.mchuan.api.MCHUANSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.mhan.api.MHANSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.qgdx.api.QGDXSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.test.DemoTestYDApi;
+import com.xinxing.o.boss.business.provider.other.txin.api.TXINSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.yliang.api.YliangSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.yshang.api.YshangSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.zhiqutest.api.ZhiQuTestSendApiImpl;
+
+/**
+ * 中国移动流量接入接口信息
+ * 
+ * @author
+ * 
+ */
+public class ChinaMobileSendApiImpl implements ChinaMobileSendApi {
+
+	private static final Logger log = Logger
+			.getLogger(ChinaMobileSendApiImpl.class);
+
+	@Autowired
+	private DemoTestYDApi demoTestYDApi;
+	@Autowired
+	private HzycbSendApiImpl hzycbSendApi;
+	@Autowired
+	private JusttestSendApiImpl justtestSendApi;
+	@Autowired
+	private BigbosscxSendApiImpl bigbosscxSendApi;
+	@Autowired
+	private YliangSendApiImpl  yliangSendApi;
+	@Autowired
+	private ZhiQuTestSendApiImpl zhiQuTestSendApi;
+	@Autowired
+	private YshangSendApiImpl yshangSendApi;
+	@Autowired
+	private MHANSendApiImpl mhanSendApi;
+	@Autowired
+	private KdouSendApiImpl kdouSendApi;
+	@Autowired
+	private CYUESendApiImpl cyueSendApi;
+	@Autowired
+	private MCHUANSendApiImpl mchuanSendApi;
+	@Autowired
+	private JNLTSendApiImpl jNLTSendApi;
+	@Autowired
+	private TXINSendApiImpl txinSendApi;
+	@Autowired
+	private LliuSendApiImpl lliuSendApi;
+	@Autowired
+	private JOSYSendApiImpl josySendApi;
+	@Autowired
+	private QGDXSendApiImpl qgdxSendApi;
+	@Autowired
+	private HquanSendApiImpl hquanSendApi;
+	@Autowired
+	private BigbosscxhfSendApiImpl bigbosscxhfSendApi;
+	
+	@Override
+	public SendOrderResult send(SendOrderInfo sendOrderInfo) {
+		String supplier = sendOrderInfo.getSupplier();
+		ChinaMobileSendApiCode apiCode = Enum.valueOf(
+				ChinaMobileSendApiCode.class, supplier);
+		log.info("apicode:" + apiCode);
+		SendOrderResult result = null;
+		if (apiCode == null) {
+			return new SendOrderResult(SendOrderStatus.FAILED.status,
+					"没有匹配的供货商-请检查供货商简称/请检查产品与手机号", null);
+		}
+		
+		switch (apiCode) {
+		case TEST_YD:
+			result = demoTestYDApi.send(sendOrderInfo);
+			break;
+		case HZYCB_YD:
+			result = hzycbSendApi.send(sendOrderInfo);
+			break;
+		case JUSTTEST_YD:
+			result = justtestSendApi.send(sendOrderInfo);
+			break;
+		case BIGBOSSCX_YD:
+			result = bigbosscxSendApi.send(sendOrderInfo);
+			break;
+		case YLIANG_YD:
+			result = yliangSendApi.send(sendOrderInfo);
+			break;
+		case YSHANG_YD:
+			result = yshangSendApi.send(sendOrderInfo);
+			break;
+		case MHAN_YD:
+			result = mhanSendApi.send(sendOrderInfo);
+			break;
+		case ZHIQU_YD:
+			result = zhiQuTestSendApi .send(sendOrderInfo);
+			break;
+		case KDOU_YD:
+			result = kdouSendApi.send(sendOrderInfo);
+			break;
+		case CYUE_YD:
+			result = cyueSendApi.send(sendOrderInfo);
+			break;
+		case MCHUAN_YD:
+			result = mchuanSendApi.send(sendOrderInfo);
+			break;
+		case JNLT_YD:
+			result = jNLTSendApi.send(sendOrderInfo);
+			break;
+		case TXIN_YD:
+			result = txinSendApi.send(sendOrderInfo);
+			break;
+		case LLIU_YD:
+			result = lliuSendApi.send(sendOrderInfo);
+			break;
+		case JOSY_YD:
+			result = josySendApi.send(sendOrderInfo);
+			break;
+		case QGDX_YD:
+			result = qgdxSendApi.send(sendOrderInfo);
+			break;
+		case HQUAN_YD:
+			result = hquanSendApi.send(sendOrderInfo);
+			break;
+		case BIGBOSSCXHF_YD:
+			result = bigbosscxhfSendApi.send(sendOrderInfo);
+			break;
+		}
+		return result;
+	}
+
+	@Override
+	public SendOrderResult query(SendOrderInfo sendOrderInfo) {
+		String supplier = sendOrderInfo.getSupplier();
+		ChinaMobileSendApiCode apiCode = Enum.valueOf(
+				ChinaMobileSendApiCode.class, supplier);
+		SendOrderResult result = null;
+		switch (apiCode) {
+		case TEST_YD:
+			result = demoTestYDApi.query(sendOrderInfo);
+			break;
+		case HZYCB_YD:
+			result = hzycbSendApi.query(sendOrderInfo);
+			break;
+		case JUSTTEST_YD:
+			result = justtestSendApi.query(sendOrderInfo);
+			break;
+		case BIGBOSSCX_YD:
+			result = bigbosscxSendApi.query(sendOrderInfo);
+			break;
+		case YLIANG_YD:
+			result = yliangSendApi.query(sendOrderInfo);
+			break;
+		case ZHIQU_YD:
+			result = zhiQuTestSendApi.query(sendOrderInfo);
+			break;
+		case YSHANG_YD:
+			result = yshangSendApi.query(sendOrderInfo);
+			break;
+		case MHAN_YD:
+			result = mhanSendApi.query(sendOrderInfo);
+			break;
+		case KDOU_YD:
+			result = kdouSendApi.query(sendOrderInfo);
+			break;
+		case CYUE_YD:
+			result = cyueSendApi.query(sendOrderInfo);
+			break;
+		case MCHUAN_YD:
+			result = mchuanSendApi.query(sendOrderInfo);
+			break;
+		case JNLT_YD:
+			result = jNLTSendApi.query(sendOrderInfo);
+			break;
+		case TXIN_YD:
+			result = txinSendApi.query(sendOrderInfo);
+			break;
+		case LLIU_YD:
+			result = lliuSendApi.query(sendOrderInfo);
+			break;
+		case JOSY_YD:
+			result = josySendApi.query(sendOrderInfo);
+			break;
+		case QGDX_YD:
+			result = qgdxSendApi.query(sendOrderInfo);
+			break;
+		case HQUAN_YD:
+			result = hquanSendApi.query(sendOrderInfo);
+			break;
+		case BIGBOSSCXHF_YD:
+			result = bigbosscxhfSendApi.query(sendOrderInfo);
+			break;
+		}
+		
+		
+		return result;
+	}
+
+}

@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:38:38 GMT+08:00 2017
+http\://xxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact xml-apis\:xml-apis\:pom\:1.0.b2 from/to public (http\://xxxxx\:8081/nexus/content/groups/public/)\: xxxxx
+@default-public-http\://xxxxx\:8081/nexus/content/groups/public/.lastUpdated=1484300405568
+https\://repo.maven.apache.org/maven2/.lastUpdated=1484300405958
+http\://maven.aliyun.com/nexus/content/groups/public/.lastUpdated=1489646318492

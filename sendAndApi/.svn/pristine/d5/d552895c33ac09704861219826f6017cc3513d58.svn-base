@@ -1,0 +1,24 @@
+#===============================================================
+#   qgdx_test
+#===============================================================
+qgdx_sendUrl=http://api.gz-10000.com/capi/trade.charge
+qgdx_queryUrl=http://api.gz-10000.com/capi/query.order
+qgdx_merchant=10262
+qgdx_clientId=10129
+#qgdx_key=GdtzMbDTWQoXVjJ
+qgdx_key=HDfDawyOKWdycYN
+qgdx_callback=http://106.14.18.108:28083/qgdx_callback.do
+#\u56de\u8c03\u5730\u5740\u6ca1\u6709\u8c03\u7528\u5230
+#===============================================================
+#   qgdx_zhengshi
+#===============================================================
+#qgdx_sendUrl=http://api.gz-10000.com/capi/trade.charge
+#qgdx_queryUrl=http://api.gz-10000.com/capi/query.order
+#qgdx_merchant=10252
+#qgdx_clientId=10129
+#qgdx_key=GdtzMbDTWQoXVjJ
+#qgdx_callback=
+#===============================================================
+#testbackUrl
+
+#qgdx_backUrl=http://xxxx/qgdx_callback.do

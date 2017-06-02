@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 用户模块配置. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<!-- 定时任务 -->
+	<bean id="CQ_QueryShcedule" class="com.xinxing.flow.shcedule.impl.CQ_QueryShceduleImpl" />
+
+	<!-- 调度器 -->
+	<bean id="customerCallBackScheduleDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="CQ_QueryShcedule" />
+		</property>
+		<property name="targetMethod" value="doScheduleJob" />
+		<property name="concurrent" value="false" />
+	</bean>
+	
+	<bean id="customerCallBackScheduleDetailTest"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="CQ_QueryShcedule" />
+		</property>
+		<property name="targetMethod" value="doScheduleJobText" />
+		<property name="concurrent" value="false" />
+	</bean>
+
+
+
+
+	<!-- 调度触发器 -->
+	<bean id="customerCallBackCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="customerCallBackScheduleDetail"></property>
+		<!-- 每天1点更新 -->
+		<property name="cronExpression" value="0 0 1 * * ?"></property>
+	</bean>
+	
+	
+	
+	
+
+	<!-- 调度工厂 -->
+	<bean id="addOrderFactoryBean"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+		<list>
+			<ref bean="customerCallBackCronTrigger" />
+		</list>
+		</property>
+	</bean>
+
+</beans>

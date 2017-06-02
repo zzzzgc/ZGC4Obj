@@ -1,0 +1,21 @@
+#===============================================================
+#   josy_test
+#===============================================================
+josy_sendUrl=http://www.fj66.net/api/newbuy.do
+josy_queryUrl=http://www.fj66.net/api/query.do
+josy_id=gzhx2017
+josy_key=gz2017!!hx@))
+josy_callBack=
+#===============================================================
+#   josy_zhengshi
+#===============================================================
+#josy_sendUrl=http://121.41.34.132:48455/recieverOrderAdvanced 
+#josy_queryUrl=http://121.41.34.132:48455/queryOrder 
+#josy_id=gzhyll
+#josy_key=70a6a8c1c0e564f4ac5b3a3c2b8a9567
+#josy_sendBack=http://send.zerogou.com/josy_callback.do
+#===============================================================
+#josy_backUrl=http://xxxx/test_callback.do
+#testbackUrl
+
+#josy_backUrl=http://xxxx/josy_callback.do

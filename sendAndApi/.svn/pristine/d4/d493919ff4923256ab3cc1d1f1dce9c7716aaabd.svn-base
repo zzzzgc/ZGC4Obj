@@ -1,0 +1,189 @@
+package com.xinxing.o.boss.business.provider.other.cyue.util;
+
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.codec.binary.Base64;
+import org.junit.Test;
+
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.o.boss.common.encry.MD5_HexUtil;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.json.JsonUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.time.TimeUtils;
+
+public class CYUEUtil {
+	/*
+	字段	    	      类型       	  	  非空	             说明
+	app_id		 string	  not null  应用id 
+	verify_sign	 string	  not null	签名，md5(app_id+app_secret)app_id,app_secret登录后台-帐号中心查看，md5小写32位	
+	out_order_id string	  not null  接入方订单
+	phone_no	 string	  not null  手机号码
+	flow_val	 string	  not null  流量值,换算成M不带单位，如1G为1024，100M为100
+	scope		 string	  not null  流量类型：0-全国流量，1-省内流量   默认值0
+	timestamp	 string	  not null	时间戳(格式: yyyyMMddHHmmssSSS 如：20160311154600111)
+	param		 string	  not null  加密参数字符串
+	callback_url string   not null  回调地址，为空则使用帐号中心配置的回调地址
+	*/
+	@SuppressWarnings("deprecation")
+	public static String getSendStr(SendOrderInfo sendOrderInfo, int area, String categoryName){
+		Map<String,Object> map = new HashMap<>();
+		/*
+		 自家sendOrderInfo提取的字段                                                                                                                                                                                                            
+		ourOrderId     	自家平台订单id                                                                                                                                                                                     
+		SupplierCode  	流量包编码(格式：【流量范围，流量数】)                                                                                                                                                                          
+		phone    		手机号 
+		 */
+		String phone = sendOrderInfo.getPhone();
+		String ourOrderId = sendOrderInfo.getOrderId();
+		String SupplierCode = sendOrderInfo.getSupplierCode();//流量包编码,第一个数代表使用范围   全国/省内,第二个数代表产品M  "0,10"
+		String[] supplier = SupplierCode.split(","); 
+		//上游所需字段
+		String	app_id = Constants.getString("cyue_id");
+		String  app_serect = Constants.getString("cyue_key");
+		// 全国包账号
+		String	app_id_all = Constants.getString("cyue_id_all");
+		String  app_serect_all = Constants.getString("cyue_key_all");
+		//String  callback_url = Constants.testgetString("cyue_sendBack_local")+"/cyue_callback.do";
+		String  callback_url = Constants.getString("cyue_sendBack")+"/cyue_callback.do";
+		String	out_order_id = ourOrderId;
+		String	phone_no = phone;
+		String  flow_val =supplier[1];
+		String	scope = supplier[0];//0 全国流量，1 省内流量 
+		String	timestamp = TimeUtils.getSSSNowTimeFormate();
+		map.put("app_id",app_id);
+		map.put("verify_sign",MD5_HexUtil.md5Hex(app_id+app_serect).toLowerCase());//数字签名
+		boolean mark = area == 1 && categoryName.contains("全国");
+		if (mark) {
+			map.clear();
+			map.put("app_id", app_id_all);
+			map.put("verify_sign", MD5_HexUtil.md5Hex(app_id_all + app_serect_all).toLowerCase());//数字签名
+		}
+		map.put("phone_no",phone_no);
+		map.put("flow_val",flow_val);
+		map.put("scope", scope);
+		map.put("out_order_id",out_order_id);	
+		map.put("timestamp",timestamp);
+		map.put("callback_url",callback_url);
+		
+		String signStr = JsonUtils.obj2Json(map);
+		String sign = aes(signStr, app_serect);
+		sign = URLEncoder.encode(sign);
+		map.clear();
+		map.put("param", sign);
+		map.put("app_id",app_id);
+		if (mark) {
+			map.put("app_id",app_id_all);
+		}
+		return HttpUtils.getStrByMapOrderByABC(map);
+	}
+	
+	/*
+	请求参数为key=value&格式参数
+	字段	    	      类型       	  	 非空	               说明
+	app_id		 string  not null   应用id	
+	verify_sign	 string	 not null	签名，md5(app_id+app_secret)app_id,app_secret登录后台查看，md5小写32位		
+	out_order_id string	 not null	接入方订单ID，多个用英文逗号分隔		
+	*/
+	public static String getQueryStr(SendOrderInfo sendOrderInfo){
+		Map<String, Object> map = new HashMap<>();
+		String	app_id = Constants.getString("cyue_id");
+		String  app_serect = Constants.getString("cyue_key");
+		String ourOrderId = sendOrderInfo.getOrderId();
+		map.put("app_id",app_id);
+		map.put("verify_sign",MD5_HexUtil.md5Hex(app_id+app_serect).toLowerCase());//数字签名
+		map.put("out_order_id",ourOrderId);
+		return HttpUtils.getStrByMapOrderByABC(map);
+	}
+	
+	/**
+	 * 上游提供的aes加密
+	 * @param content
+	 * @param key
+	 * @return
+	 */
+	   private static String aes(String content, String key) {  
+	        try {             
+		    	 byte[] raw = key.getBytes("utf-8");
+		         SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+		         Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+		         cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+		         byte[] encrypted = cipher.doFinal(content.getBytes("utf-8"));
+		         Base64 base64 = new Base64();
+		         return new String(base64.encode(encrypted),"utf-8");
+	    	    }catch(Exception e) {  
+	            e.printStackTrace();  
+	        }  
+		    return null;  
+		 }  
+	  /**
+	   *  上游提供的aes解密
+	   * @param content
+	   * @param sKey
+	   * @return
+	   * @throws Exception
+	   */
+	   public  static String decrypt(String content, String sKey) throws Exception {
+	           try {
+	               // 判断Key是否正确
+	               if (sKey == null) {
+	                   System.out.print("Key为空null");
+	                   return null;
+	               }
+	               // 判断Key是否为16位
+	               if (sKey.length() != 16) {
+	                   System.out.print("Key长度不是16位");
+	                   return null;
+	               }
+	               byte[] raw = sKey.getBytes("utf-8");
+	               SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+	               Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");//AES/ECB/PKCS5Padding
+	               cipher.init(Cipher.DECRYPT_MODE, skeySpec);
+	               byte[] encrypted1 = new Base64().decode(content);//先用base64解密
+	               try {
+	                   byte[] original = cipher.doFinal(encrypted1);
+	                   String originalString = new String(original,"utf-8");
+	                   return originalString;
+	               } catch (Exception e) {
+	               	e.printStackTrace();
+	                   return null;
+	               }
+	           } catch (Exception ex) {
+	           	ex.printStackTrace();
+	               return null;
+	           }
+	   }
+	  
+		/**
+		 * 获取结果码信息
+		 * @param codes
+		 * @return
+		 */
+		public static String getErrorMsg(String code){
+			Map<String,String> map = new HashMap<>();
+			map.put("0","操作成功");
+			map.put("1","系统升级中");
+			map.put("-1","参数错误");
+			map.put("-2","访问超速");
+			map.put("-3","鉴权失败(校验码错误、ip白名单、ip黑名单)");
+			map.put("-4","账号异常(账号禁用）");
+			map.put("-5","异常订购(号码归属地与已配置产品不匹配、规格不存在、漫游参数不匹配)");
+			map.put("-6","余额不足");
+			map.put("-7","系统异常");
+			map.put("-8","重复提交");
+			map.put("-9","号码异常(未知号段、黑名单）");
+			map.put("-10","订单不存在");
+			return map.get(code)==null?"":map.get(code);
+		}
+		
+		@Test
+		public void testName() throws Exception {
+
+		}
+
+}

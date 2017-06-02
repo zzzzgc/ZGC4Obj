@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 用户模块配置. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<!-- 定时保存昨天的分析数据 S -->
+	<bean id="dataAnalyzeProcessorScheduleService"
+		class="xinxing.boss.admin.common.schedule.DataAnalyzeProcessorScheduleServiceImpl" />
+
+	<bean id="dataAnalyzeProcessorScheduleDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="dataAnalyzeProcessorScheduleService" />
+		</property>
+		<property name="targetMethod" value="doScheduleJob" />
+		<property name="concurrent" value="false" /><!-- 作业不并发调度 -->
+	</bean>
+
+	<bean id="dataAnalyzeCronTriggerBean"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="dataAnalyzeProcessorScheduleDetail"></property>
+		<property name="cronExpression" value="0 0 2 * * ?"></property>
+	</bean>
+
+	<!-- 每月定时上传CSV S -->
+	<bean id="uploadCSV4MonthScheduleService"
+		class="xinxing.boss.admin.common.schedule.UploadCSV4MonthScheduleServiceImpl" />
+
+	<bean id="uploadCSV4MonthScheduleDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="uploadCSV4MonthScheduleService" />
+		</property>
+		<property name="targetMethod" value="doScheduleJob" />
+		<property name="concurrent" value="false" /><!-- 作业不并发调度 -->
+	</bean>
+
+	<bean id="uploadCSV4MonthCronTriggerBean"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="uploadCSV4MonthScheduleDetail"></property>
+		<property name="cronExpression" value="0 0 3 1 * ?"></property>
+	</bean>
+	<!-- 每月定时上传CSV E -->
+
+	<!-- 每日定时上传CSV S -->
+	<bean id="uploadCSV4DayScheduleService"
+		class="xinxing.boss.admin.common.schedule.UploadCSV4DayScheduleServiceImpl" />
+
+	<bean id="uploadCSV4DayScheduleDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="uploadCSV4DayScheduleService" />
+		</property>
+		<property name="targetMethod" value="doScheduleJob" />
+		<property name="concurrent" value="false" /><!-- 作业不并发调度 -->
+	</bean>
+
+	<bean id="uploadCSV4DayCronTriggerBean"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="uploadCSV4DayScheduleDetail"></property>
+		<property name="cronExpression" value="0 0 2 * * ?"></property>
+	</bean>
+	<!-- 每日定时上传CSV E -->
+	
+	<!-- 调度工厂 -->
+	<bean id="addOrderFactoryBean"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+<!-- 				<ref bean="dataAnalyzeCronTriggerBean" />
+				<ref bean="uploadCSV4MonthCronTriggerBean" />
+				<ref bean="uploadCSV4DayCronTriggerBean" /> -->
+			</list>
+		</property>
+	</bean>
+
+</beans>

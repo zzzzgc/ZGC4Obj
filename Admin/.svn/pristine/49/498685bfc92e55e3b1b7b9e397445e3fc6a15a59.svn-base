@@ -1,0 +1,13 @@
+#===============================================================
+#  tmall config
+#===============================================================
+loginFilterStrs=login,static,/yc/,/test/,logout,views/error,chain.doFilter,yangcong_callback,websocket,upload,createMenu
+
+
+
+
+
+
+
+
+

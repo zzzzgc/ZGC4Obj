@@ -1,0 +1,113 @@
+package com.xinxing.transfer.po;
+
+public class TransferOrdre {
+    private Integer id;
+
+    private String downid;
+
+    private String supplierid;
+
+    private String phone;
+
+    private Integer status;
+
+    private String callbackaddress;
+
+    private String callbackdata;
+
+    private String callbacktime;
+
+    private String starttime;
+
+    private String endtime;
+
+    private String typeflow;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getDownid() {
+        return downid;
+    }
+
+    public void setDownid(String downid) {
+        this.downid = downid == null ? null : downid.trim();
+    }
+
+    public String getSupplierid() {
+        return supplierid;
+    }
+
+    public void setSupplierid(String supplierid) {
+        this.supplierid = supplierid == null ? null : supplierid.trim();
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone == null ? null : phone.trim();
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public String getCallbackaddress() {
+        return callbackaddress;
+    }
+
+    public void setCallbackaddress(String callbackaddress) {
+        this.callbackaddress = callbackaddress == null ? null : callbackaddress.trim();
+    }
+
+    public String getCallbackdata() {
+        return callbackdata;
+    }
+
+    public void setCallbackdata(String callbackdata) {
+        this.callbackdata = callbackdata == null ? null : callbackdata.trim();
+    }
+
+    public String getCallbacktime() {
+        return callbacktime;
+    }
+
+    public void setCallbacktime(String callbacktime) {
+        this.callbacktime = callbacktime == null ? null : callbacktime.trim();
+    }
+
+    public String getStarttime() {
+        return starttime;
+    }
+
+    public void setStarttime(String starttime) {
+        this.starttime = starttime == null ? null : starttime.trim();
+    }
+
+    public String getEndtime() {
+        return endtime;
+    }
+
+    public void setEndtime(String endtime) {
+        this.endtime = endtime == null ? null : endtime.trim();
+    }
+
+    public String getTypeflow() {
+        return typeflow;
+    }
+
+    public void setTypeflow(String typeflow) {
+        this.typeflow = typeflow == null ? null : typeflow.trim();
+    }
+}

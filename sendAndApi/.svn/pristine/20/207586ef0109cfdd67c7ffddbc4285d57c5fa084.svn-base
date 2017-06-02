@@ -1,0 +1,11 @@
+#===============================================================
+#   Justtest
+#===============================================================
+justtest_sendUrl=
+justtest_queryUrl=
+justtest_buss_id=10023
+justtest_con_id=1124
+justtest_password=3700CE886E8627F41E79
+#justtest_backUrl=http://cxapi.sjllb.com/test_callback.do
+#justtest_backUrl=http://test.api.llczxt.com/justtest_callback.do
+#justtest_backUrl=http://cxapi.sjllb.com/justtest_callback.do

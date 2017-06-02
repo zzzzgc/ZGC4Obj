@@ -1,0 +1,32 @@
+####################################################
+#    \u6B63\u5F0F\u670D
+####################################################
+##\u5546\u6237\u552F\u4E00\u6807\u793A    \u91C7\u8D2D\u5546id
+#CQ_MerChant=600015
+##\u5BA2\u6237ID   
+#CQ_ClientID=CQ
+##\u5BA2\u6237\u79D8\u94A5
+#CQ_ClientSeceret=UncRgmMALRanLtk
+##\u52A0\u5BC6\u5B57\u6BB5
+#CQ_Key=T3dd16e
+
+####################################################
+#    new测试服
+####################################################
+#商户唯一标示    采购商id
+CQ_CustomerName=\u5F69\u65D7\u516C\u53F8
+
+CQ_MerChant=600012
+#客户ID   
+CQ_ClientID=zgcTestCQ
+#客户秘钥
+CQ_ClientSeceret=XFibjoPUsJfaMJW
+#加密字段
+CQ_Key=T3dd16e
+
+CQ_downloadFile=D:\\logs
+
+#FTP
+CQ_FTP4Ip=106.14.18.108
+CQ_FTP4User=cq
+CQ_FTP4Passwd=TaS12Bb

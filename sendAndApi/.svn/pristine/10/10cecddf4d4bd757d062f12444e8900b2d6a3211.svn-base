@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<!-- 发单服务S -->
+	<bean id="flowInitService" class="com.xinxing.o.boss.business.init.FlowInitServiceImpl" init-method="initSendService"/>  
+	<!-- 发单服务E -->
+	
+	<!-- 接单API接口CMD S -->	
+	<bean id="customerApi" class="com.xinxing.o.boss.api.customer.cmd.CmdCustomerApi">
+		<property name="name" value="cusapi" />
+		<property name="commandContext" ref="commandContext" />
+	</bean>
+	<!-- 接单API接口CMD E -->	
+
+	<!-- 刷新缓存API接口CMD S -->	
+	<bean id="refreshCache" class="com.xinxing.o.boss.api.system.cache.cmd.CmdRefreshCache">
+		<property name="name" value="flushcache" />
+		<property name="commandContext" ref="commandContext" />
+	</bean>
+	<!-- 刷新缓存API接口CMD E -->	
+	
+	<!-- 手工处理API接口CMD S -->	
+	<bean id="cmdHandleManualOrder" class="com.xinxing.o.boss.api.system.handle.cmd.CmdHandleManualOrder">
+		<property name="name" value="manualapi" />
+		<property name="commandContext" ref="commandContext" />
+	</bean>
+	<!-- 手工处理API接口CMD E -->	
+
+	
+</beans>

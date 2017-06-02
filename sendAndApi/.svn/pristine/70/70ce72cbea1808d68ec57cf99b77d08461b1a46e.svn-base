@@ -1,0 +1,160 @@
+package com.xinxing.o.boss.business.provider.other.lliu.api;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.o.boss.business.provider.api.supplier.api.SendApi;
+import com.xinxing.o.boss.business.provider.other.lliu.util.LliuUtils;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.util.FlowQueryLogUtils;
+import com.xinxing.o.boss.common.util.FlowSendLogUtils;
+
+public class LliuSendApiImpl implements SendApi {
+
+	private static Logger log = Logger.getLogger(LliuSendApiImpl.class);
+	
+	/*public static void main(String[] args) {
+	SendOrderInfo sendOrderInfo = PhoneUtils.createSendOrderInfo("orderId", "supplierCode", "supplierOrderId", "phone");
+	System.out.println(sendOrderInfo.toString());
+	LliuSendApiImpl lliu = new LliuSendApiImpl();
+	SendOrderResult result = lliu.send(sendOrderInfo);
+	System.out.println();
+	}*/
+	/*响应参数
+	{ "request_no":"Q2014111522043710000257", 
+	  "orderstatus": "processing", 
+	  "result_code":"00000" }    */	
+	@Override
+	public SendOrderResult send(SendOrderInfo sendOrderInfo) {
+		SendOrderResult result = null;
+		String orderid = sendOrderInfo.getOrderId();
+		String sendUrl = Constants.getString("lliu_sendUrl");
+		try {
+			String sendStr = LliuUtils.getSendStr(sendOrderInfo);
+			//获取订单发送(传递/返回)日志
+			FlowSendLogUtils.sendReqLog(log, orderid, sendUrl+";"+sendStr);
+			String getResp = HttpUtils.sendPost1(sendUrl, sendStr, "application/json", "utf-8");
+			FlowSendLogUtils.sendResLog(log, orderid, getResp);
+			
+			if (StringUtils.isNotBlank(getResp)) {
+				JSONObject obj = JSON.parseObject(getResp);
+				String orderstatus = obj.getString("orderstatus");
+				String result_code = obj.getString("result_code");
+				String msg = LliuUtils.getErrorMsg(result_code);
+				switch (orderstatus) {
+				case "finish":
+					result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,null);
+					break;
+				case "processing":
+					result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,null);
+					break;
+				case "fail":
+					if ("60002".equals(result_code)) { //余额不足转人工
+						result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,result_code+":"+msg,null);
+					}else {
+						result = new SendOrderResult(SendOrderStatus.FAILED.status,result_code+":"+msg,null);
+					}
+					break;
+				default:
+					result = new SendOrderResult(SendOrderStatus.FAILED.status,result_code+":"+msg,null);
+					break;
+				}
+			}else {
+				result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,"充值响应结果为空",orderid);
+			}
+		} catch (Exception e) {
+			result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,"系统异常,请找技术人员",orderid);
+			FlowSendLogUtils.sendExceptionLog(log, sendOrderInfo.getOrderId(), e);
+		}
+		return result;
+	}
+	
+	/*输出样例
+	{ "orderstatus": "finish", 
+	  "result_code": "00000", 
+	  "phone_id": "18137817158", 
+	  "ordertime": "2014-11-17 13:33:37", 
+	  "order_id": "P2014111713333700000228", 
+	  "plat_offer_id": "TBC00005000A", 
+	  "transactionid": "Q2014111713333710000269" } */	
+	@Override
+	public Map<String, SendOrderResult> querys(List<SendOrderInfo> sendOrderInfos) {
+		Map<String,SendOrderResult> resultMap = new HashMap<>();
+		SendOrderResult result = null;
+		for (SendOrderInfo sendOrderInfo : sendOrderInfos) {
+			String orderId = sendOrderInfo.getOrderId();
+			try {
+				String queryStr = LliuUtils.getQueryStr(sendOrderInfo);
+				String queryUrl = Constants.getString("lliu_queryUrl");
+				//获取订单查询 (传递/返回) 日志
+				FlowQueryLogUtils.queryReqLog(log, orderId, queryUrl+";"+queryStr);
+				String getResp = HttpUtils.sendPost1(queryUrl, queryStr,"application/json","utf-8");
+				FlowQueryLogUtils.queryResLog(log, orderId, getResp);
+				
+				if (StringUtils.isNotBlank(getResp)) {
+					JSONObject obj = JSON.parseObject(getResp);
+					String order_id = obj.getString("order_id");
+					String orderstatus = obj.getString("orderstatus");
+					String result_code = obj.getString("result_code");
+					String theirOrderId = obj.getString("transactionid");
+					String msg = LliuUtils.getErrorMsg(result_code);
+					if (StringUtils.isNotBlank(order_id)) {
+						switch (orderstatus) {
+						case "finish":
+							result = new SendOrderResult(SendOrderStatus.SUCCESS.status,null,theirOrderId);
+							break;
+						case "processing":
+							result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,theirOrderId);
+							break;
+						case "fail":
+							if ("77777".equals(result_code)) {
+								result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,theirOrderId);
+							}else if("60002".equals(result_code)){ //余额不足
+								result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,msg,theirOrderId);
+							}else {
+								result = new SendOrderResult(SendOrderStatus.FAILED.status,msg,theirOrderId);
+							}
+							break;
+						default:
+							result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,theirOrderId);
+							break;
+						}
+						
+					}else {
+						result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK .status,null,theirOrderId);
+					}
+				}else {
+					result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,"查询返回为空",orderId);
+				}
+			} catch (Exception e) {
+				result= new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "系统异常,请找技术人员",orderId);
+				FlowQueryLogUtils.queryExceptionLog(log,orderId, e);
+			}
+			
+			resultMap.put(orderId,result);
+		}
+		return resultMap;
+	}
+
+	@Override
+	public SendOrderResult query(SendOrderInfo sendOrderInfo) {
+		List<SendOrderInfo> queryList = new ArrayList<>();
+		queryList.add(sendOrderInfo);
+		Map<String, SendOrderResult> resultMap = querys(queryList);
+		if (resultMap != null) {
+			return resultMap.get(sendOrderInfo.getOrderId());
+		}
+		return null;
+	}
+}

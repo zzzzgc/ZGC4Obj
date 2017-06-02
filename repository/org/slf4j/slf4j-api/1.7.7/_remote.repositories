@@ -1,0 +1,8 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:37:58 GMT+08:00 2017
+slf4j-api-1.7.7.pom>nexus=
+slf4j-api-1.7.7.jar>nexus=
+slf4j-api-1.7.7-javadoc.jar>public=
+slf4j-api-1.7.7.jar>central=
+slf4j-api-1.7.7-sources.jar>central=
+slf4j-api-1.7.7.pom>central=

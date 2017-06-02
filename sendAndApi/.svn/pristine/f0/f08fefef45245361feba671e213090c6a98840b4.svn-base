@@ -1,0 +1,26 @@
+#===============================================================
+#   zhiqutest
+#===============================================================
+#zhiqu_Url=http://llpack.sharera.net:8089/proxy/test/pack-interaction-test.action
+#zhiqu_service_query=llsk.product.query
+#zhiqu_order_create=llsk.order.create
+#zhiqu_order_query=llsk.order.query
+#zhiqu_partnerKey=AF64D04577E026A2F79F80EF47764425
+#zhiqu_partnerCode=FXT0014
+#zhiqu_sendBack=http://112.74.48.39:8080/zerogou
+#===============================================================
+#   zhiqu_zhengshi
+#===============================================================
+zhiqu_Url=http://llpack.sharera.com/proxy/pack-interaction.action
+zhiqu_service_query=llsk.product.query
+zhiqu_order_create=llsk.order.create
+zhiqu_order_query=llsk.order.query
+zhiqu_partnerKey=166CEE63C001D71EE9ED5E8C8C133342
+zhiqu_partnerCode=FX00110
+zhiqu_sendBack=http://112.74.167.182:28083
+#zhiqu_backUrl=http://xxxx/test_callback.do
+
+#testbackUrl
+
+#zhiqu_backUrl=http://xxxx/zhiqu_callback.do
+

@@ -1,0 +1,46 @@
+package com.xinxing.flow.core.upstream;
+
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.xinxing.flow.erorr.NULLForProductException;
+import com.xinxing.flow.erorr.NULLOrderIdException;
+import com.xinxing.flow.erorr.NULLResponseException;
+import com.xinxing.flow.erorr.TransferSystemException;
+/**
+ * 上游接口
+ * @author ZGC
+ *
+ */
+public interface TransferUpstream {
+	/**
+	 * 提交订单
+	 * BB->AA
+	 * @param param 所有参数
+	 * @return 参数集合
+	 * @throws NULLForProductException 
+	 * @throws NULLResponseException 
+	 * @throws TransferSystemException 
+	 */
+	public Map<String,String> sendOrder(Map<String,Object> param) throws NULLForProductException, NULLResponseException, TransferSystemException;
+	/**
+	 * 查询订单
+	 * BB->AA
+	 * @param param 所有参数
+	 * @return 参数集合
+	 * @throws NULLForProductException 
+	 * @throws NULLResponseException 
+	 * @throws NULLOrderIdException 
+	 * @throws TransferSystemException 
+	 */
+	public Map<String,String>  queryOrder(Map<String,Object> param) throws NULLForProductException, NULLResponseException, NULLOrderIdException, TransferSystemException;
+	/**
+	 * 回调订单
+	 * AA->BB
+	 * @param param 所有参数s
+	 * @return 参数集合
+	 */
+	public Map<String,String>  callBack(HttpServletRequest request, HttpServletResponse response);
+}

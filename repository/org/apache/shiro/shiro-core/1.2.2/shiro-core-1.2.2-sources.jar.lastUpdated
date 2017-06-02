@@ -1,0 +1,5 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Tue Feb 14 14:02:07 GMT+08:00 2017
+http\://xxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact org.apache.shiro\:shiro-core\:jar\:sources\:1.2.2 from/to public (http\://xxxxx\:8081/nexus/content/groups/public/)\: xxxxx
+@default-public-http\://xxxxx\:8081/nexus/content/groups/public/.lastUpdated=1487052093537
+https\://repo.maven.apache.org/maven2/.lastUpdated=1487052127500

@@ -1,0 +1,85 @@
+package com.xinxing.o.boss.business.provider.api.chinaunicom;
+
+
+public enum UniComSendApiCode {
+	/**
+	 * 杭州易充宝
+	 */
+	HZYCB_LT("HZYCB_LT"),
+	/**
+	 * 重庆电信
+	 */
+	JUSTTEST_LT("JUSTTEST_LT"),
+	/**
+	 * 大boss宸信
+	 */
+	BIGBOSSCX_LT("BIGBOSSCX_LT"),
+	/**
+	 * 测试山东联通
+	 */
+	TESTSDLT_LT("TESTSDLT_LT"),
+	/**
+	 * 我的联通
+	 */
+	TESTWODO_LT("TESTWODO_LT"),
+	/**
+	 * YLIANG
+	 */
+	YLIANG_LT("YLIANG_LT"),
+	/**
+	 * ZHIQU
+	 */
+	ZHIQU_LT("ZHIQU_LT"),
+	/**
+	 * MHAN
+	 */
+	MHAN_LT("MHAN_LT"),
+	/**
+	 * KDOU
+	 */
+	KDOU_LT("KDOU_LT"),
+	/**
+	 * CYUE
+	 */
+	CYUE_LT("CYUE_LT"),
+	/**
+	 * YSHANG
+	 */
+	YSHANG_LT("YSHANG_LT"),
+	/**
+	 * MCHUAN
+	 */
+	MCHUAN_LT("MCHUAN_LT"),
+	/**
+	 * JNLT
+	 */
+	JNLT_LT("JNLT_LT"),
+	/**
+	 * TXIN_LT
+	 */
+	TXIN_LT("TXIN_LT"),
+	/**
+	 * LLIU
+	 */
+	LLIU_LT("LLIU_LT"),
+	/**
+	 * JOSY
+	 */
+	JOSY_LT("JOSY_LT"),
+	/**
+	 * QGDX_LT
+	 */
+	QGDX_LT("QGDX_LT"),
+	/**
+	 * HQUAN_LT
+	 */
+	HQUAN_LT("HQUAN_LT")
+	;
+
+	public String apiCode;
+
+	private UniComSendApiCode(String apiCode) {
+		this.apiCode = apiCode;
+	}
+
+}

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 用户模块配置. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<!-- 基本信息bean S -->
+	<bean id="flowCacheService" class="com.xinxing.boss.cache.b" />
+	<bean id="flowCommonService" class="com.xinxing.boss.interaction.service.common.b" />
+	<bean id="flowCustomerService" class="com.xinxing.boss.interaction.service.customer.b" />
+	<bean id="flowOrderService" class="com.xinxing.boss.interaction.service.order.b" />
+	<bean id="flowProviderService" class="com.xinxing.boss.interaction.service.provider.b" />
+	<!-- 基本信息bean E -->
+
+
+	<!-- 发送线程bean S -->
+	<bean id="chinaMobileWorkerThread" class="com.xinxing.flow.core.mobile.a"
+		destroy-method="destroy" lazy-init="true">
+		<constructor-arg index="0" value="10" />
+		<constructor-arg index="1" value="移动" />
+		<constructor-arg index="2" ref="flowOrderService" /><!-- 
+			flowOrderApi -->
+		<constructor-arg index="3" ref="flowWorkerService" /><!-- 
+			business -->
+	</bean>
+
+	<bean id="chinaTelecomWorkerThread" class="com.xinxing.flow.core.telecom.a"
+		destroy-method="destroy" lazy-init="true">
+		<constructor-arg index="0" value="6" />
+		<constructor-arg index="1" value="电信" />
+		<constructor-arg index="2" ref="flowOrderService" /><!-- 
+			flowOrderApi -->
+		<constructor-arg index="3" ref="flowWorkerService" /><!-- 
+			business -->
+	</bean>
+
+	<bean id="chinaUnicomWorkerThread" class="com.xinxing.flow.core.unicom.a"
+		destroy-method="destroy" lazy-init="true">
+		<constructor-arg index="0" value="6" />
+		<constructor-arg index="1" value="联通" />
+		<constructor-arg index="2" ref="flowOrderService" /><!-- 
+			flowOrderApi -->
+		<constructor-arg index="3" ref="flowWorkerService" /><!-- 
+			business -->
+	</bean>
+
+	<bean id="manualWorkerThread" class="com.xinxing.flow.core.manual.a"
+		destroy-method="destroy" lazy-init="true">
+		<constructor-arg index="0" value="1" />
+		<constructor-arg index="1" ref="flowWorkerService" /><!-- 
+			business -->
+	</bean>
+
+	<!-- 发送线程bean E -->
+
+	<!-- 流量核心业务处理逻辑 S -->
+	<bean id="flowWorkerService" class="com.xinxing.boss.business.worker.handle.b"></bean>
+	<!-- 流量核心业务处理逻辑 E -->
+
+
+	<!-- 回调采购商S -->
+	<bean id="customerCallBack"
+		class="com.xinxing.o.boss.business.customer.callback.CustomerCallBackServiceImpl" />
+	<!-- 回调采购商E -->
+
+	<!-- 警报服务S -->
+	<bean id="flowAlarmService" class="com.xinxing.o.boss.alarm.service.AlarmServiceImpl" />
+	<!-- 警报服务E -->
+
+	<!-- 短信服务 -->
+	<bean id="mesageService" class="com.xinxing.o.boss.message.MessageServiceImpl"></bean>
+	<!-- 短信服务 -->
+
+	<!-- 定时任务服务S -->
+	<!-- <bean id="flowScheduleJobApi" class="xinxing.boss.business.api.schedule.FlowScheduleJobApiImpl" 
+		/> -->
+	<!-- 定时任务服务E -->
+
+
+
+</beans>

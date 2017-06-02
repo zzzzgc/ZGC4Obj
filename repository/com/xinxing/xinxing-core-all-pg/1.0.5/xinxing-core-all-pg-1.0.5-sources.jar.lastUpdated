@@ -1,0 +1,12 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Tue Feb 14 09:11:50 GMT+08:00 2017
+@default-public-http\://xxxxx\:8081/nexus/content/groups/public/.lastUpdated=1484878646285
+@default-public-http\://xxxxxxx\:8081/nexus/content/groups/public/.lastUpdated=1486611314588
+http\://xxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact com.xinxing\:xinxing-core-all-pg\:jar\:sources\:1.0.5 from/to public (http\://xxxxx\:8081/nexus/content/groups/public/)\: xxxxx
+http\://localhost\:8081/nexus/content/groups/public/.lastUpdated=1484299631467
+http\://112.74.48.39\:8080/zerogou/testsdlt_callback.do/.lastUpdated=1487034710514
+http\://112.74.48.39\:8080/zerogou/testsdlt_callback.do/.error=
+http\://xxxxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact com.xinxing\:xinxing-core-all-pg\:jar\:sources\:1.0.5 from/to public (http\://xxxxxxx\:8081/nexus/content/groups/public/)\: xxxxxxx
+https\://repo.maven.apache.org/maven2/.lastUpdated=1484299632763
+https\://repo.maven.apache.org/maven2/.error=
+http\://localhost\:8081/nexus/content/groups/public/.error=

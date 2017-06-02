@@ -1,0 +1,95 @@
+package com.xinxing.o.boss.api.system.cache.cmd;
+
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.xinxing.boss.business.worker.domain.QueueStatus;
+import com.xinxing.flow.cmd.a;
+import com.xinxing.o.boss.api.system.cache.domain.FlowCacheType;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.json.JsonUtils;
+
+public class CmdRefreshCache extends a {
+
+	private static final Logger logger = Logger.getLogger(CmdRefreshCache.class);
+
+	@Autowired
+	private com.xinxing.boss.cache.a flowCacheService;
+
+	@Autowired
+	private com.xinxing.boss.business.worker.handle.a flowWorkerService;
+
+	@Override
+	public String b(HttpServletRequest request, HttpServletResponse response){
+		String postData = HttpUtils.getReqPostString(request, logger);
+		logger.info("刷新缓存时获取的数据：--"+postData);
+		Map<Object, Object> map = JSON.parseObject(postData, new TypeReference<Map<Object, Object>>() {
+		});
+		String type = (String) map.get("type");
+		FlowCacheType flowCacheType = FlowCacheType.getFlowCacheType(type);
+		QueueStatus status = null;
+		switch (flowCacheType) {
+		case BLACK_PHONE:
+			flowCacheService.f();
+			break;
+		case CATEGORY:
+			flowCacheService.b();
+			break;
+		case OPERATOR_GATE:
+			flowCacheService.g();
+			break;
+		case PROVIDER:
+			flowCacheService.a();
+			break;
+		case NORMAL_FAIL:
+			flowCacheService.e();
+			break;
+		case BOSS_CONFIG:
+			flowCacheService.d();
+			break;
+		case BOSS_PROVIDER_SAME:
+			flowCacheService.c();
+			break;
+		case START_SEND_MOBILE:
+			flowWorkerService.a("移动", true);
+			break;
+		case START_SEND_TELECOM:
+			flowWorkerService.a("电信", true);
+			break;
+		case START_SEND_UNICOM:
+			flowWorkerService.a("联通", true);
+			break;
+		case STOP_SEND_MOBILE:
+			flowWorkerService.a("移动", false);
+			break;
+		case STOP_SEND_TELECOM:
+			flowWorkerService.a("电信", false);
+			break;
+		case STOP_SEND_UNICOM:
+			flowWorkerService.a("联通", false);
+			break;
+		case QUEUE_STATE:
+			status = flowWorkerService.getQueueStatus();
+			break;
+		case OPERATOR_CLOSE_CONFIG:
+			flowCacheService.h();
+			break;
+		default:
+			break;
+		}
+		String res = "OK";
+		if (status != null) {
+			res = JsonUtils.obj2Json(status);
+		}
+		//flowCacheService.getprovider
+		return a(response, res, "刷新数据返回信息");
+	}
+
+}

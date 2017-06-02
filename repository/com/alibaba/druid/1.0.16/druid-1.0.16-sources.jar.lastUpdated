@@ -1,0 +1,5 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Fri Feb 10 10:00:14 GMT+08:00 2017
+https\://repo.maven.apache.org/maven2/.lastUpdated=1486692014447
+@default-public-http\://xxxxxxx\:8081/nexus/content/groups/public/.lastUpdated=1486691965577
+http\://xxxxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact com.alibaba\:druid\:jar\:sources\:1.0.16 from/to public (http\://xxxxxxx\:8081/nexus/content/groups/public/)\: xxxxxxx

@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:37:55 GMT+08:00 2017
+http\://xxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact joda-time\:joda-time\:jar\:2.7 from/to public (http\://xxxxx\:8081/nexus/content/groups/public/)\: xxxxx
+@default-public-http\://xxxxx\:8081/nexus/content/groups/public/.lastUpdated=1484210889411
+https\://repo.maven.apache.org/maven2/.lastUpdated=1484216132162
+http\://maven.aliyun.com/nexus/content/groups/public/.lastUpdated=1489646275138

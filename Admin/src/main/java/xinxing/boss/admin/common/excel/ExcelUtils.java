@@ -1,0 +1,708 @@
+/*
+ * 文件名：ExcelUtils.java
+ * 版权：
+ * 描述：
+ * 修改人：
+ * 修改时间：
+ * 修改内容：
+ */
+package xinxing.boss.admin.common.excel;
+
+import java.beans.PropertyDescriptor;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipOutputStream;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFPalette;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.hssf.util.Region;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import xinxing.boss.admin.common.utils.base.BaseUtil;
+import xinxing.boss.admin.common.utils.time.DateUtils;
+import xinxing.boss.admin.system.user.domain.User;
+import xinxing.boss.admin.system.user.utils.UserUtil;
+
+public class ExcelUtils {
+	private static Logger log = LoggerFactory.getLogger(ExcelUtils.class);
+
+	/**
+	 * 错误原因输出到页面
+	 * 
+	 * @param response
+	 * @param page
+	 * @param errorMsg
+	 */
+	public static void writeErrorMsg(HttpServletResponse response, Long count, String errorMsg) {
+		log.info("导出人:" + (UserUtil.getCurrentUser() != null ? UserUtil.getCurrentUser().getLoginName() : "导出人为空") + ",导出数据" + count + ",超过10万条");
+		PrintWriter out = null;
+		try {
+			out = response.getWriter();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		out.print(errorMsg);
+		out.flush();
+		out.close();
+		return;
+	}
+
+	/**
+	 * JavaBean转Map
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	public static Map<String, Object> beanToMap(Object obj) {
+		Map<String, Object> params = new HashMap<String, Object>(0);
+		try {
+			PropertyUtilsBean propertyUtilsBean = new PropertyUtilsBean();
+			PropertyDescriptor[] descriptors = propertyUtilsBean.getPropertyDescriptors(obj);
+			for (int i = 0; i < descriptors.length; i++) {
+				String name = descriptors[i].getName();
+				if (!StringUtils.equals(name, "class")) {
+					params.put(name, propertyUtilsBean.getNestedProperty(obj, name));
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return params;
+	}
+
+	/**
+	 * 创建普通表头
+	 * 
+	 * @param list
+	 *            表头名称列表
+	 * @return
+	 */
+	public static TableHeaderMetaData createTableHeader(List<String> list) {
+		TableHeaderMetaData headMeta = new TableHeaderMetaData();
+		for (String title : list) {
+			TableColumn tc = new TableColumn();
+			tc.setDisplay(title);
+			headMeta.addColumn(tc);
+		}
+		return headMeta;
+	}
+
+	/**
+	 * 创建普通表头
+	 * 
+	 * @param titls
+	 *            表头名称数组
+	 * @return
+	 */
+	public static TableHeaderMetaData createTableHeader(String[] titls) {
+		TableHeaderMetaData headMeta = new TableHeaderMetaData();
+		for (String title : titls) {
+			TableColumn tc = new TableColumn();
+			tc.setDisplay(title);
+			tc.setGrouped(true);
+			headMeta.addColumn(tc);
+		}
+		return headMeta;
+	}
+
+	/**
+	 * 创建普通表头
+	 * 
+	 * @param titls
+	 *            表头名称数组
+	 * @param spanCount
+	 *            需要行合并的列数。 由第一列数据开始到指定列依次从左到右进行合并操作。 如该值大于表头名称数组，则为全列合并
+	 * @return
+	 */
+	public static TableHeaderMetaData createTableHeader(String[] titls, int spanCount) {
+		if (spanCount > titls.length)
+			spanCount = titls.length;
+		TableHeaderMetaData headMeta = new TableHeaderMetaData();
+		for (int i = 0; i < titls.length; i++) {
+			TableColumn tc = new TableColumn();
+			tc.setDisplay(titls[i]);
+			if (i < spanCount)
+				tc.setGrouped(true);
+			headMeta.addColumn(tc);
+		}
+		return headMeta;
+	}
+
+	/**
+	 * 创建合并表头
+	 * 
+	 * @param parents
+	 *            父表头数组
+	 * @param children
+	 *            子表头数组
+	 * @return
+	 */
+	public static TableHeaderMetaData createTableHeader(String[] parents, String[][] children) {
+		TableHeaderMetaData headMeta = new TableHeaderMetaData();
+		TableColumn parentColumn = null;
+		TableColumn sonColumn = null;
+		for (int i = 0; i < parents.length; i++) {
+			parentColumn = new TableColumn();
+			parentColumn.setDisplay(parents[i]);
+			if (children != null && children[i] != null) {
+				for (int j = 0; j < children[i].length; j++) {
+					sonColumn = new TableColumn();
+					sonColumn.setDisplay(children[i][j]);
+					parentColumn.addChild(sonColumn);
+				}
+			}
+			headMeta.addColumn(parentColumn);
+		}
+		return headMeta;
+	}
+
+	/**
+	 * 拼装数据
+	 * 
+	 * @param list
+	 *            数据集
+	 * @param headMeta
+	 *            表头
+	 * @param fields
+	 *            对象或Map属性数组（注意：顺序要与表头标题顺序对应，如数据集为List<Object[]>，则该参数可以为null）
+	 * @return TableData
+	 */
+	@SuppressWarnings("unchecked")
+	public static TableData createTableData(List list, TableHeaderMetaData headMeta, String[] fields) {
+
+		TableData td = new TableData(headMeta);
+		TableDataRow row = null;
+		if (list != null && list.size() > 0) {
+			if (list.get(0).getClass().isArray()) {// 数组类型
+				for (Object obj : list) {
+					row = new TableDataRow(td);
+					for (Object o : (Object[]) obj) {
+						row.addCell(o);
+					}
+					td.addRow(row);
+				}
+			} else {// JavaBean或Map类型
+				for (Object obj : list) {
+					row = new TableDataRow(td);
+					Map<String, Object> map = (obj instanceof Map) ? (Map<String, Object>) obj : beanToMap(obj);
+					for (String key : fields) {
+						row.addCell(map.get(key));
+					}
+					td.addRow(row);
+				}
+			}
+		}
+		return td;
+	}
+
+	/**
+	 * 创建压缩输出流
+	 * 
+	 * @param response
+	 * @param zipName
+	 *            压缩包名次
+	 * @return
+	 */
+	public static ZipOutputStream createZipStream(HttpServletResponse response, String zipName) {
+		response.reset();
+		response.setContentType("application/vnd.ms-excel"); // 不同类型的文件对应不同的MIME类型
+		try {
+			response.setHeader("Content-Disposition", "attachment;filename=".concat(String.valueOf(URLEncoder.encode(zipName + ".zip", "UTF-8"))));
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		OutputStream os = null;
+		try {
+			os = response.getOutputStream();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new ZipOutputStream(os);
+	}
+
+	public static void copySheetStyle(HSSFWorkbook destwb, HSSFSheet dest, HSSFWorkbook srcwb, HSSFSheet src) {
+		if (src == null || dest == null)
+			return;
+
+		dest.setAlternativeExpression(src.getAlternateExpression());
+		dest.setAlternativeFormula(src.getAlternateFormula());
+		dest.setAutobreaks(src.getAutobreaks());
+		dest.setDialog(src.getDialog());
+		if (src.getColumnBreaks() != null) {
+			for (int col : src.getColumnBreaks()) {
+				dest.setColumnBreak((short) col);
+			}
+		}
+		dest.setDefaultColumnWidth(src.getDefaultColumnWidth());
+		dest.setDefaultRowHeight(src.getDefaultRowHeight());
+		dest.setDefaultRowHeightInPoints(src.getDefaultRowHeightInPoints());
+		dest.setDisplayGuts(src.getDisplayGuts());
+		dest.setFitToPage(src.getFitToPage());
+		dest.setHorizontallyCenter(src.getHorizontallyCenter());
+		dest.setDisplayFormulas(src.isDisplayFormulas());
+		dest.setDisplayGridlines(src.isDisplayGridlines());
+		dest.setDisplayRowColHeadings(src.isDisplayRowColHeadings());
+		dest.setGridsPrinted(src.isGridsPrinted());
+		dest.setPrintGridlines(src.isPrintGridlines());
+
+		for (int i = 0; i < src.getNumMergedRegions(); i++) {
+			Region r = src.getMergedRegionAt(i);
+			dest.addMergedRegion(r);
+		}
+
+		if (src.getRowBreaks() != null) {
+			for (int row : src.getRowBreaks()) {
+				dest.setRowBreak(row);
+			}
+		}
+		dest.setRowSumsBelow(src.getRowSumsBelow());
+		dest.setRowSumsRight(src.getRowSumsRight());
+
+		short maxcol = 0;
+		for (int i = 0; i <= src.getLastRowNum(); i++) {
+			HSSFRow row = src.getRow(i);
+			if (row != null) {
+				if (maxcol < row.getLastCellNum())
+					maxcol = row.getLastCellNum();
+			}
+		}
+		for (short col = 0; col <= maxcol; col++) {
+			if (src.getColumnWidth(col) != src.getDefaultColumnWidth())
+				dest.setColumnWidth(col, src.getColumnWidth(col));
+			dest.setColumnHidden(col, src.isColumnHidden(col));
+		}
+	}
+
+	public static String dumpCellStyle(HSSFCellStyle style) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(style.getHidden()).append(",");
+		sb.append(style.getLocked()).append(",");
+		sb.append(style.getWrapText()).append(",");
+		sb.append(style.getAlignment()).append(",");
+		sb.append(style.getBorderBottom()).append(",");
+		sb.append(style.getBorderLeft()).append(",");
+		sb.append(style.getBorderRight()).append(",");
+		sb.append(style.getBorderTop()).append(",");
+		sb.append(style.getBottomBorderColor()).append(",");
+		sb.append(style.getDataFormat()).append(",");
+		sb.append(style.getFillBackgroundColor()).append(",");
+		sb.append(style.getFillForegroundColor()).append(",");
+		sb.append(style.getFillPattern()).append(",");
+		sb.append(style.getIndention()).append(",");
+		sb.append(style.getLeftBorderColor()).append(",");
+		sb.append(style.getRightBorderColor()).append(",");
+		sb.append(style.getRotation()).append(",");
+		sb.append(style.getTopBorderColor()).append(",");
+		sb.append(style.getVerticalAlignment());
+
+		return sb.toString();
+	}
+
+	public static String dumpFont(HSSFFont font) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(font.getItalic()).append(",").append(font.getStrikeout()).append(",").append(font.getBoldweight()).append(",")
+				.append(font.getCharSet()).append(",").append(font.getColor()).append(",").append(font.getFontHeight()).append(",")
+				.append(font.getFontName()).append(",").append(font.getTypeOffset()).append(",").append(font.getUnderline());
+		return sb.toString();
+	}
+
+	public static void copyCellStyle(HSSFWorkbook destwb, HSSFCell dest, HSSFWorkbook srcwb, HSSFCell src) {
+		if (src == null || dest == null)
+			return;
+
+		HSSFCellStyle nstyle = findStyle(src.getCellStyle(), srcwb, destwb);
+		if (nstyle == null) {
+			nstyle = destwb.createCellStyle();
+			copyCellStyle(destwb, nstyle, srcwb, src.getCellStyle());
+		}
+		dest.setCellStyle(nstyle);
+	}
+
+	private static boolean isSameColor(short a, short b, HSSFPalette apalette, HSSFPalette bpalette) {
+		if (a == b)
+			return true;
+		HSSFColor acolor = apalette.getColor(a);
+		HSSFColor bcolor = bpalette.getColor(b);
+		if (acolor == null)
+			return true;
+		if (bcolor == null)
+			return false;
+		return acolor.getHexString().equals(bcolor.getHexString());
+	}
+
+	private static short findColor(short index, HSSFWorkbook srcwb, HSSFWorkbook destwb) {
+		Integer id = new Integer(index);
+		if (HSSFColor.getIndexHash().containsKey(id))
+			return index;
+		if (index == HSSFColor.AUTOMATIC.index)
+			return index;
+		HSSFColor color = srcwb.getCustomPalette().getColor(index);
+		if (color == null) {
+			return index;
+		}
+
+		HSSFColor ncolor = destwb.getCustomPalette().findColor((byte) color.getTriplet()[0], (byte) color.getTriplet()[1],
+				(byte) color.getTriplet()[2]);
+		if (ncolor != null)
+			return ncolor.getIndex();
+		destwb.getCustomPalette().setColorAtIndex(index, (byte) color.getTriplet()[0], (byte) color.getTriplet()[1], (byte) color.getTriplet()[2]);
+		return index;
+	}
+
+	public static HSSFCellStyle findStyle(HSSFCellStyle style, HSSFWorkbook srcwb, HSSFWorkbook destwb) {
+		HSSFPalette srcpalette = srcwb.getCustomPalette();
+		HSSFPalette destpalette = destwb.getCustomPalette();
+
+		for (short i = 0; i < destwb.getNumCellStyles(); i++) {
+			HSSFCellStyle old = destwb.getCellStyleAt(i);
+			if (old == null)
+				continue;
+
+			if (style.getAlignment() == old.getAlignment() && style.getBorderBottom() == old.getBorderBottom()
+					&& style.getBorderLeft() == old.getBorderLeft() && style.getBorderRight() == old.getBorderRight()
+					&& style.getBorderTop() == old.getBorderTop()
+					&& isSameColor(style.getBottomBorderColor(), old.getBottomBorderColor(), srcpalette, destpalette)
+					&& style.getDataFormat() == old.getDataFormat()
+					&& isSameColor(style.getFillBackgroundColor(), old.getFillBackgroundColor(), srcpalette, destpalette)
+					&& isSameColor(style.getFillForegroundColor(), old.getFillForegroundColor(), srcpalette, destpalette)
+					&& style.getFillPattern() == old.getFillPattern() && style.getHidden() == old.getHidden()
+					&& style.getIndention() == old.getIndention()
+					&& isSameColor(style.getLeftBorderColor(), old.getLeftBorderColor(), srcpalette, destpalette)
+					&& style.getLocked() == old.getLocked()
+					&& isSameColor(style.getRightBorderColor(), old.getRightBorderColor(), srcpalette, destpalette)
+					&& style.getRotation() == old.getRotation()
+					&& isSameColor(style.getTopBorderColor(), old.getTopBorderColor(), srcpalette, destpalette)
+					&& style.getVerticalAlignment() == old.getVerticalAlignment() && style.getWrapText() == old.getWrapText()) {
+
+				HSSFFont oldfont = destwb.getFontAt(old.getFontIndex());
+				HSSFFont font = srcwb.getFontAt(style.getFontIndex());
+				if (oldfont.getBoldweight() == font.getBoldweight() && oldfont.getItalic() == font.getItalic()
+						&& oldfont.getStrikeout() == font.getStrikeout() && oldfont.getCharSet() == font.getCharSet()
+						&& isSameColor(oldfont.getColor(), font.getColor(), srcpalette, destpalette)
+						&& oldfont.getFontHeight() == font.getFontHeight() && oldfont.getFontName().equals(font.getFontName())
+						&& oldfont.getTypeOffset() == font.getTypeOffset() && oldfont.getUnderline() == font.getUnderline()) {
+					return old;
+				}
+			}
+		}
+		return null;
+	}
+
+	public static void copyCellStyle(HSSFWorkbook destwb, HSSFCellStyle dest, HSSFWorkbook srcwb, HSSFCellStyle src) {
+		if (src == null || dest == null)
+			return;
+		dest.setAlignment(src.getAlignment());
+		dest.setBorderBottom(src.getBorderBottom());
+		dest.setBorderLeft(src.getBorderLeft());
+		dest.setBorderRight(src.getBorderRight());
+		dest.setBorderTop(src.getBorderTop());
+		dest.setBottomBorderColor(findColor(src.getBottomBorderColor(), srcwb, destwb));
+		dest.setDataFormat(destwb.createDataFormat().getFormat(srcwb.createDataFormat().getFormat(src.getDataFormat())));
+		dest.setFillPattern(src.getFillPattern());
+		dest.setFillForegroundColor(findColor(src.getFillForegroundColor(), srcwb, destwb));
+		dest.setFillBackgroundColor(findColor(src.getFillBackgroundColor(), srcwb, destwb));
+		dest.setHidden(src.getHidden());
+		dest.setIndention(src.getIndention());
+		dest.setLeftBorderColor(findColor(src.getLeftBorderColor(), srcwb, destwb));
+		dest.setLocked(src.getLocked());
+		dest.setRightBorderColor(findColor(src.getRightBorderColor(), srcwb, destwb));
+		dest.setRotation(src.getRotation());
+		dest.setTopBorderColor(findColor(src.getTopBorderColor(), srcwb, destwb));
+		dest.setVerticalAlignment(src.getVerticalAlignment());
+		dest.setWrapText(src.getWrapText());
+
+		HSSFFont f = srcwb.getFontAt(src.getFontIndex());
+		HSSFFont nf = findFont(f, srcwb, destwb);
+		if (nf == null) {
+			nf = destwb.createFont();
+			nf.setBoldweight(f.getBoldweight());
+			nf.setCharSet(f.getCharSet());
+			nf.setColor(findColor(f.getColor(), srcwb, destwb));
+			nf.setFontHeight(f.getFontHeight());
+			nf.setFontHeightInPoints(f.getFontHeightInPoints());
+			nf.setFontName(f.getFontName());
+			nf.setItalic(f.getItalic());
+			nf.setStrikeout(f.getStrikeout());
+			nf.setTypeOffset(f.getTypeOffset());
+			nf.setUnderline(f.getUnderline());
+		}
+		dest.setFont(nf);
+	}
+
+	private static HSSFFont findFont(HSSFFont font, HSSFWorkbook src, HSSFWorkbook dest) {
+		for (short i = 0; i < dest.getNumberOfFonts(); i++) {
+			HSSFFont oldfont = dest.getFontAt(i);
+			if (font.getBoldweight() == oldfont.getBoldweight() && font.getItalic() == oldfont.getItalic()
+					&& font.getStrikeout() == oldfont.getStrikeout() && font.getCharSet() == oldfont.getCharSet()
+					&& font.getColor() == oldfont.getColor() && font.getFontHeight() == oldfont.getFontHeight()
+					&& font.getFontName().equals(oldfont.getFontName()) && font.getTypeOffset() == oldfont.getTypeOffset()
+					&& font.getUnderline() == oldfont.getUnderline()) {
+				return oldfont;
+			}
+		}
+		return null;
+	}
+
+	public static void copySheet(HSSFWorkbook destwb, HSSFSheet dest, HSSFWorkbook srcwb, HSSFSheet src) {
+		if (src == null || dest == null)
+			return;
+
+		copySheetStyle(destwb, dest, srcwb, src);
+
+		for (int i = 0; i <= src.getLastRowNum(); i++) {
+			HSSFRow row = src.getRow(i);
+			copyRow(destwb, dest.createRow(i), srcwb, row);
+		}
+	}
+
+	public static void copyRow(HSSFWorkbook destwb, HSSFRow dest, HSSFWorkbook srcwb, HSSFRow src) {
+		if (src == null || dest == null)
+			return;
+		for (short i = 0; i <= src.getLastCellNum(); i++) {
+			if (src.getCell(i) != null) {
+				HSSFCell cell = dest.createCell(i);
+				copyCell(destwb, cell, srcwb, src.getCell(i));
+			}
+		}
+
+	}
+
+	public static void copyCell(HSSFWorkbook destwb, HSSFCell dest, HSSFWorkbook srcwb, HSSFCell src) {
+		if (src == null) {
+			dest.setCellType(HSSFCell.CELL_TYPE_BLANK);
+			return;
+		}
+
+		if (src.getCellComment() != null)
+			dest.setCellComment(src.getCellComment());
+		if (src.getCellStyle() != null) {
+			HSSFCellStyle nstyle = findStyle(src.getCellStyle(), srcwb, destwb);
+			if (nstyle == null) {
+				nstyle = destwb.createCellStyle();
+				copyCellStyle(destwb, nstyle, srcwb, src.getCellStyle());
+			}
+			dest.setCellStyle(nstyle);
+		}
+		dest.setCellType(src.getCellType());
+
+		switch (src.getCellType()) {
+		case HSSFCell.CELL_TYPE_BLANK:
+
+			break;
+		case HSSFCell.CELL_TYPE_BOOLEAN:
+			dest.setCellValue(src.getBooleanCellValue());
+			break;
+		case HSSFCell.CELL_TYPE_FORMULA:
+			dest.setCellFormula(src.getCellFormula());
+			break;
+		case HSSFCell.CELL_TYPE_ERROR:
+			dest.setCellErrorValue(src.getErrorCellValue());
+			break;
+		case HSSFCell.CELL_TYPE_NUMERIC:
+			dest.setCellValue(src.getNumericCellValue());
+			break;
+		default:
+			dest.setCellValue(new HSSFRichTextString(src.getRichStringCellValue().getString()));
+			break;
+		}
+	}
+
+	/**
+	 *  * 得到Excel表中的值  *  * @param hssfCell  *    Excel中的每一个格子  * @return
+	 * Excel中每一个格子中的值  
+	 */
+	@SuppressWarnings("static-access")
+	private String getValue(HSSFCell hssfCell) {
+		if (hssfCell.getCellType() == hssfCell.CELL_TYPE_BOOLEAN) {
+			// 返回布尔类型的值
+			return String.valueOf(hssfCell.getBooleanCellValue());
+		} else if (hssfCell.getCellType() == hssfCell.CELL_TYPE_NUMERIC) {
+			// 返回数值类型的值
+			return String.valueOf(hssfCell.getNumericCellValue());
+		} else {
+			// 返回字符串类型的值
+			return String.valueOf(hssfCell.getStringCellValue());
+		}
+	}
+
+	/*
+	 * 从0开始将值转为字符串 例如 0冻结；1正常 values={0,1};
+	 */
+	public static void showValue(Map<String, Object> beanToMap, String name, String... values) {
+		if (beanToMap.get(name) != null) {
+			for (int i = 0; i < values.length; i++) {
+				if ((Integer) beanToMap.get(name) == i) {
+					beanToMap.put(name, values[i]);
+					break;
+				}
+			}
+		} else
+			beanToMap.put(name, null);
+	}
+
+	public static void changTimeFormat(Map<String,Object> beanToMap,String name,String... values){
+		String flowType = (String) beanToMap.get(name);
+		if (flowType != null) {
+			String[] split = flowType.split(",");
+			String operator = "YD".equals(split[3])?values[0]:("LT".equals(split[3])?values[1]:values[2]);
+			String area = "0".equals(split[2]) ?values[3]:values[4];
+			beanToMap.put(name, split[1]+operator+split[0]+"M"+area+"包"); 
+		}
+	}
+
+	public static boolean delTempFile(String path) {
+		boolean flag = false;
+		File file = new File(path);
+		if (!file.exists()) {
+			return flag;
+		}
+		if (!file.isDirectory()) {
+			return flag;
+		}
+		String[] tempList = file.list();
+		File temp = null;
+		for (int i = 0; i < tempList.length; i++) {
+			if (path.endsWith(File.separator)) {
+				temp = new File(path + tempList[i]);
+			} else {
+				temp = new File(path + File.separator + tempList[i]);
+			}
+			if (temp.isFile()) {
+				String name = temp.getName();
+				if (name.contains("poi-sxssf-sheet") && (System.currentTimeMillis() - temp.lastModified()) / 1000 > 60 * 60 * 2) {
+					temp.delete();
+				}
+			}
+			// if (temp.isDirectory()) {
+			// delAllFile(path + "/" + tempList[i]);//先删除文件夹里面的文件
+			// // delFolder(path + "/" + tempList[i]);//再删除空文件夹
+			// flag = true;
+			// }
+		}
+		return flag;
+	}
+
+	/*
+	 * 生成excel
+	 */
+	public static void productExcel(HttpServletResponse response, List<Map<String, Object>> list, String title, String[] hearders, String[] fields,
+			Logger logger) {
+		String webinfUrl = BaseUtil.getWEBINFUrl();
+		String deleteFileUrl = webinfUrl.substring(0, webinfUrl.indexOf("webapps")) + "temp";
+		log.info("deleteFileUrl:" + deleteFileUrl);
+		delTempFile(deleteFileUrl);
+		Long beginTime = System.currentTimeMillis();
+		User currentUser = UserUtil.getCurrentUser();
+		if (currentUser != null) {
+			logger.info("导出人id:" + currentUser.getId() + ",用户名称:" + currentUser.getLoginName() + "导出excel数据:" + list.size());
+		} else {
+			logger.info("导出人为空");
+		}
+		logger.info("导出excel开始" + DateUtils.dateFormat(new Date()));
+		int listLength = list.size();
+		int heardersLength = hearders.length;
+		int fieldsLength = fields.length;
+		// 第一步，创建一个webbook，对应一个Excel文件
+		Workbook wb = new SXSSFWorkbook();
+		// 第二步，在webbook中添加一个sheet,对应Excel文件中的sheet
+		Sheet sheet = wb.createSheet(title + "表1");
+		for (int j = 0; j < fieldsLength; j++) {
+			Object object = list.get(0).get(fields[j]) == null ? "" : list.get(0).get(fields[j]);
+			sheet.setColumnWidth(j,
+					hearders[j].toString().getBytes().length * 256 * 5 / 4 > object.toString().getBytes().length * 256 * 5 / 4 ? hearders[j]
+							.toString().getBytes().length * 256 * 5 / 4 : object.toString().getBytes().length * 256 * 5 / 4);
+		}
+		// 第三步，在sheet中添加表头第0行,注意老版本poi对Excel的行数列数有限制short
+		Row row = sheet.createRow((int) 0);
+		// 第四步，创建单元格，并设置值表头 设置表头居中
+		CellStyle style = wb.createCellStyle();
+		style.setAlignment(CellStyle.ALIGN_CENTER); // 创建一个居中格式
+		Cell cell = null;
+		for (int i = 0; i < heardersLength; i++) {
+			cell = row.createCell((int) i);
+			cell.setCellValue(hearders[i]);
+			cell.setCellStyle(style);
+		}
+		// 第五步，写入实体数据 实际应用中这些数据从数据库得到，
+		for (int i = 0; i < listLength; i++) {
+			if (i / 65535 > 0 && i % 65535 == 0) {
+				// 创建工作表
+				sheet = wb.createSheet(title + "表" + (i / 65535 + 1));
+				for (int j = 0; j < fields.length; j++) {
+					Object object = list.get(0).get(fields[j]) == null ? "" : list.get(0).get(fields[j]);
+					sheet.setColumnWidth(j,
+							hearders[j].toString().getBytes().length * 256 * 5 / 4 > object.toString().getBytes().length * 256 * 5 / 4 ? hearders[j]
+									.toString().getBytes().length * 256 * 5 / 4 : object.toString().getBytes().length * 256 * 5 / 4);
+				}
+				row = sheet.createRow((int) 0);
+				style = wb.createCellStyle();
+				style.setAlignment(CellStyle.ALIGN_CENTER);
+				for (int j = 0; j < hearders.length; j++) {
+					cell = row.createCell((int) j);
+					cell.setCellValue(hearders[j]);
+					cell.setCellStyle(style);
+				}
+			}
+			row = sheet.createRow(((int) i % 65535 + 1));
+			// 第四步，创建单元格，并设置值
+			for (int j = 0; j < fields.length; j++) {
+				Map<String, Object> map = list.get(i);
+				Object object = map.get(fields[j]);
+				if (object != null) {
+					if (object.getClass() == Double.class) {
+						row.createCell((int) j).setCellValue((Double) object);
+					} else if (object.getClass() == BigDecimal.class) {
+						row.createCell((int) j).setCellValue(((BigDecimal) object).doubleValue());
+					} else if (object.getClass() == Integer.class) {
+						row.createCell((int) j).setCellValue((Integer) object);
+					} else if (object.getClass() == Float.class) {
+						row.createCell((int) j).setCellValue((Float) object);
+					} else if (object.getClass() == Date.class) {
+						row.createCell((int) j).setCellValue((Date) object);
+					} else
+						row.createCell((int) j).setCellValue(object.toString());
+				} else {
+					row.createCell((int) j).setCellValue("");
+				}
+			}
+		}
+		try {
+			String sFileName = title + ".xlsx";
+			// response.setHeader("Content-Disposition", "attachment;filename="
+			// .concat(String.valueOf(URLEncoder.encode(sFileName, "ISO8859-1"))));
+			response.addHeader("Content-Disposition", "attachment;filename=" + new String(sFileName.getBytes("UTF-8"), "ISO8859-1"));
+			response.setHeader("Content-Type", "application/x-excel ");// application/vnd.ms-excel
+			wb.write(response.getOutputStream());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		logger.info("导出excel结束,耗时:" + (System.currentTimeMillis() - beginTime) / 1000 + "秒");
+	}
+}

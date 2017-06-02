@@ -1,0 +1,3 @@
+eclipse.preferences.version=1
+validator.Checked=bin/src/main/webapp/static/system/balance,src/main/webapp/static/system/balance/type.json,src/main/webapp/static/plugins
+validator.Unchecked=

@@ -1,0 +1,23 @@
+//package junitTest;
+//
+//import org.apache.log4j.Logger;
+//import org.junit.Test;
+//import org.springframework.beans.factory.annotation.Autowired;
+//
+//import xinxing.boss.admin.boss.order.domain.OrderInfo;
+//import xinxing.boss.admin.boss.order.service.OrderInfoService;
+//import xinxing.boss.admin.common.utils.json.JsonUtils;
+//
+//public class JunitTestDemo extends CommonTest {
+//	private static final Logger log = Logger.getLogger(JunitTestDemo.class);
+//	@Autowired
+//	private OrderInfoService orderInfoService;
+//	@Test
+//	public void test() {
+////		System.out.println("------");
+////		OrderInfo orderInfo = orderInfoService.get(2410486);
+////		System.out.println(JsonUtils.obj2Json(orderInfo));
+//	}
+//
+//
+//}

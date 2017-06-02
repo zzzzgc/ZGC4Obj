@@ -1,0 +1,25 @@
+#===============================================================
+#   josy_test
+#===============================================================
+#josy_sendUrl=http://www.fj66.net/api/newbuy.do
+#josy_queryUrl=http://www.fj66.net/api/query.do
+#josy_sendUrl=http://121.196.203.135/api/newbuy.do
+#josy_queryUrl=http://121.196.203.135/api/query.do
+#josy_id=gzhx2017
+#josy_key=gz2017!!hx@))
+#josy_callBack=http://106.14.18.108:28083/jsoy_callback.do
+#===============================================================
+#   josy_zhengshi
+#===============================================================
+#josy_sendUrl=http://www.fj66.net/api/newbuy.do
+#josy_queryUrl=http://www.fj66.net/api/query.do
+josy_sendUrl=http://121.196.203.135/api/newbuy.do
+josy_queryUrl=http://121.196.203.135/api/query.do
+josy_id=gzhx2017
+josy_key=gz2017!!hx@))
+josy_callBack=
+#===============================================================
+#josy_backUrl=http://xxxx/test_callback.do
+#testbackUrl
+
+#josy_backUrl=http://xxxx/josy_callback.do

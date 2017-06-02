@@ -1,0 +1,149 @@
+package com.xinxing.o.boss.business.provider.other.qws.api;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.boss.interaction.pojo.common.ProductCategoryInfo;
+import com.xinxing.boss.interaction.pojo.customer.OrderInfo;
+import com.xinxing.o.boss.business.provider.api.supplier.api.SendApi;
+import com.xinxing.o.boss.business.provider.other.hquan.api.HquanSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.hquan.util.HquanUtils;
+import com.xinxing.o.boss.business.provider.other.qws.util.QwsUtil;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.phone.PhoneUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.util.FlowQueryLogUtils;
+import com.xinxing.o.boss.common.util.FlowSendLogUtils;
+import com.xinxing.o.boss.common.util.FlowUtils;
+
+public class QwsSendApiImpl implements SendApi {
+	 private static Logger log = Logger.getLogger(QwsSendApiImpl.class);
+	    
+		/*public static void main(String[] args) {
+			SendOrderInfo sendOrderInfo = PhoneUtils.createSendOrderInfo("test123", "0,30", "233666", "136226623110");
+			QwsSendApiImpl qws = new QwsSendApiImpl();
+			SendOrderResult result = qws.send(sendOrderInfo);
+			System.out.println(result);
+		}*/
+	    
+	    /* 响应示例：{"success":true,"orderId":"PO20150823115651710273","price":10000}   */
+		@Override
+		public SendOrderResult send(SendOrderInfo sendOrderInfo) {
+			SendOrderResult result = null;
+			String ourOrderId = sendOrderInfo.getOrderId();
+			try {
+				String sendUrl = Constants.getString("qws_sendUrl_product");
+				String sendStr = QwsUtil.getSendStr(sendOrderInfo);
+				//获取订单发送日志
+				FlowSendLogUtils.sendReqLog(log,ourOrderId,sendUrl+","+sendStr);
+				//发送post请求后获取返回信息
+				String jsonStr = HttpUtils.sendPostWithContentType(sendUrl,sendStr,"UTF-8");
+				System.out.println(sendUrl);
+				System.out.println(sendStr);
+				System.out.println(jsonStr);
+				//获取订单返回日志
+				FlowSendLogUtils.sendResLog(log, ourOrderId, jsonStr);
+				
+				if (StringUtils.isNotBlank(jsonStr)) {
+					JSONObject obj = JSON.parseObject(jsonStr);
+					String providerResult = obj.getString("success");
+					String theirOrderId = obj.getString("orderId");
+					if ("true".equals(providerResult)) {
+						result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,ourOrderId);
+					}else {
+						String error = obj.getString("error");
+						if (error.contains("余额不足")) {
+							result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,error,ourOrderId);
+						}else{
+							result = new SendOrderResult(SendOrderStatus.FAILED.status,error,ourOrderId);
+						}
+					}
+				}else { 
+					result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,"订单充值响应为空",ourOrderId);
+				}	
+			} catch (Exception e) {
+					result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "系统异常,请找技术人员", ourOrderId);
+					FlowSendLogUtils.sendExceptionLog(log,ourOrderId, e);
+			}
+			return result;
+		}
+		
+		/* {"success":true,"orderId":"PO20150723153744703003","status":1}  */
+		@Override
+		public Map<String, SendOrderResult> querys(List<SendOrderInfo> sendOrderInfos) {
+			Map<String,SendOrderResult> resultMap = new HashMap<>();
+			SendOrderResult result = null;
+			for (SendOrderInfo sendOrderInfo : sendOrderInfos) {
+				String ourOrderId = sendOrderInfo.getOrderId();
+				try {
+					String queryUrl = Constants.getString("qws_queryUrl");
+					String queryStr = QwsUtil.getQueryStr(sendOrderInfo);
+
+					//获取订单查询日志
+					FlowQueryLogUtils.queryReqLog(log,ourOrderId,queryUrl+","+queryStr);
+					//发送post请求后获取返回信息
+					String jsonStr = HttpUtils.sendPostWithContentType(queryUrl,queryStr,"UTF-8");
+					//获取订单返回日志
+					FlowQueryLogUtils.queryResLog(log,ourOrderId,jsonStr);
+					
+					if (StringUtils.isNotBlank(jsonStr)) {
+						JSONObject obj = JSON.parseObject(jsonStr);
+						String providerResult = obj.getString("success");
+						String theirOrderId = obj.getString("orderId");
+						String status = obj.getString("status");
+						String error = obj.getString("error");
+						if ("true".equals(providerResult)) {
+							switch (status) {  //1 成功,2 失败,0 处理中
+							case "1":
+								result = new SendOrderResult(SendOrderStatus.SUCCESS.status,null,ourOrderId);
+								break;
+							case "0":
+								result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,null,ourOrderId);
+								break;
+							case "2":
+							default:
+								result = new SendOrderResult(SendOrderStatus.FAILED.status,error,ourOrderId);
+								break;
+							}
+						}else {
+							if (error.contains("余额不足")) {
+								result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,error,ourOrderId);
+							}else {
+								result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,error,ourOrderId);
+							}
+						}
+					}else {
+						result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status,"查询返回为空",ourOrderId);
+					}
+				} catch (Exception e) {
+					result= new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "系统异常,请找技术人员",ourOrderId);
+					FlowQueryLogUtils.queryExceptionLog(log,ourOrderId, e);
+				}
+				resultMap.put(ourOrderId,result);
+			}
+			return resultMap;
+		}
+
+		@Override
+		public SendOrderResult query(SendOrderInfo sendOrderInfo) {
+			List<SendOrderInfo> queryList = new ArrayList<>();
+			queryList.add(sendOrderInfo);
+			Map<String, SendOrderResult> resultMap = querys(queryList);
+			if (resultMap != null) {
+				return resultMap.get(sendOrderInfo.getOrderId());
+			}
+			return null;
+		}
+
+}

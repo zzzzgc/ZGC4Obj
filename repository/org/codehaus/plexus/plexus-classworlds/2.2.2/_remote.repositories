@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:38:29 GMT+08:00 2017
+plexus-classworlds-2.2.2.jar>central=
+plexus-classworlds-2.2.2.pom>central=
+plexus-classworlds-2.2.2.pom>nexus=
+plexus-classworlds-2.2.2.jar>nexus=

@@ -1,0 +1,211 @@
+package com.xinxing.o.boss.business.provider.other.lliu.util;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
+
+import org.junit.Test;
+import org.w3c.dom.NamedNodeMap;
+
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.o.boss.common.encry.MD5_HexUtil;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.json.JsonUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.xml.XmlUtils;
+
+public class LliuUtils {
+	public static String getSendStr(SendOrderInfo sendOrderInfo) throws Exception{
+		
+		Map<String,Object> map = new HashMap<>();
+		/*
+		 自家sendOrderInfo提取的字段                                                                                                                                                                                                            
+		ourOrderId     	自家平台订单id                                                                                                                                                                                     
+		SupplierCode  	流量包编码(格式：【流量范围，流量数】)                                                                                                                                                                          
+		phone    		手机号 
+		 */
+		String phone = sendOrderInfo.getPhone();
+		String ourOrderId = sendOrderInfo.getOrderId();
+		String supplierCode = sendOrderInfo.getSupplierCode();//可输入对方提供的销售品 ID
+		//提供给上游字段
+		String	partner_no = Constants.getString("lliu_id");  //合 作 方 编号
+		String  request_no = ourOrderId;  	  //请求编号，与订单ID一致 
+		String  contract_id = partner_no; 	  //合同 ID=合作方编号
+		String	order_id = ourOrderId;   	  //订单 ID,和 request_no 一致
+		String	plat_offer_id = supplierCode; //销售品 ID,对方提供
+		String  phone_id  = phone;		 	  //手机号码
+		String	timestamp = String.valueOf(System.currentTimeMillis()/1000) ; //时间戳
+		
+		map.put("request_no",request_no);
+		map.put("contract_id",contract_id);
+		map.put("order_id",order_id);
+		map.put("plat_offer_id", plat_offer_id);
+		map.put("phone_id",phone_id);	
+		map.put("timestamp",timestamp);
+
+		String signStr = JsonUtils.obj2Json(map);
+		String lliu_key = Constants.getString("lliu_key");
+		String lliu_iv = Constants.getString("lliu_iv");
+		String code = encrypt(signStr, lliu_key, lliu_iv);
+		map = new HashMap<>();
+		map.put("partner_no",partner_no);
+		map.put("code",code);
+		return JsonUtils.obj2Json(map);
+	}
+	
+	/*输入样例
+	  {"partner_no": "700102", 
+  	   "request_no": "P2014111713333700000228", 
+       "contract_id": "100001"} 	  */
+	public static String getQueryStr(SendOrderInfo sendOrderInfo){
+		Map<String, Object> map = new HashMap<>();
+		
+		String ourOrderId = sendOrderInfo.getOrderId();
+		String	partner_no = Constants.getString("lliu_id");  //合 作 方 编号
+		String  request_no = ourOrderId;  	  //请求编号
+		String  contract_id = partner_no; 	  //合同 ID=合作方编号
+		
+		map.put("partner_no",partner_no);
+		map.put("request_no",request_no);
+		map.put("contract_id",contract_id);
+		
+		return JsonUtils.obj2Json(map);
+	}
+
+	   /**上游提供的aes加密
+	    * @date   2017年3月28日下午5:31:46
+	    * @author 唐镜茗
+	    * @param input
+	    * @param key
+	    * @param vi
+	    * @return
+	    * @throws Exception
+	    */
+	   public static String encrypt(String input, String key, String iv) throws Exception { 
+		   
+	        try { 
+	            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding"); 
+	 
+	            cipher.init(Cipher.ENCRYPT_MODE,
+	            		new SecretKeySpec(key.getBytes(), "AES"), 
+	                    new IvParameterSpec(iv.getBytes())); 
+	 
+	            byte[] encrypted = cipher.doFinal(input.getBytes("utf-8")); 
+	            // 此处使用 BASE64 做转码。 
+	            return DatatypeConverter.printBase64Binary(encrypted);   
+	        } catch (Exception ex) { 
+	            return null; 
+	        } 
+	   } 
+
+	  
+		/**
+		 * 获取结果码信息
+		 * @param codes
+		 * @return
+		 */
+		public static String getErrorMsg(String code){
+			Map<String,String> map = new HashMap<>();
+			map.put("00000","成功");
+			map.put("10001","非法手机号码");
+			map.put("10002","非法批次");
+			map.put("10003","非法参数(参数只能是特殊字符或为空值)");
+			map.put("10004","非法订购日期");
+			map.put("10005","签名验证失败");
+			map.put("10006","非法合作方");
+			map.put("10007","非法销售品");
+			map.put("10008","非法请求流水号");
+			map.put("10009","非法渠道");
+			map.put("10010","号码欠费");
+			map.put("10012","号码已冻结或注销");
+			map.put("10013","黑名单客户");
+			map.put("10015","系统异常");
+			map.put("10016","不能重复订购");
+			map.put("10019","套餐互斥");
+			map.put("10020","号码已欠费停机");
+			map.put("10026","生成订单号失败");
+			map.put("10027","超出可订购流量包的数量");
+			map.put("10028","活动尚未开始");
+			map.put("10029","活动任务已结束");
+			map.put("10030","非法合同编号");
+			map.put("10031","产品未配置");
+			map.put("10032","销售品不存在");
+			map.put("10033","用户有在途工单，无法受理");
+			map.put("10040","无权限调用该服务");
+			map.put("10044","超过每小时能访问该接口的次数");
+			map.put("10046","订购紧急停止");
+			map.put("10054","配置异常");
+			map.put("10058","客户业务受限");
+			map.put("10062","省内 CRM未找到该本地网区号");
+			map.put("10065","系统异常");
+			map.put("10067","密钥或向量不正确");
+			map.put("10068","充值号码所属省份与充值渠道省份不一致");
+			map.put("10073","系统忙");
+			map.put("10074","用户信息不存在");
+			map.put("10090","其他");
+			map.put("10108","用户为预开通卡用户，请先办理资料返档");
+			map.put("10109","不存在对应的业务开展省份");
+			map.put("10110","剩余可用账户不足");
+			map.put("10111","用户状态异常");
+			map.put("10115","找不到对应运营商");
+			map.put("10117","调用计费接口失败");
+			map.put("10118","CRM销售品价格尚未配置");
+			map.put("10119","合同结算方式不存在");
+			map.put("10120","IMSI反查不到对应手机号码");
+			map.put("10122","合同业务范围尚未配置");
+			map.put("10225","无主套餐");
+			map.put("60002","账户余额不足");
+			map.put("80001","拼装发送报文异常");
+			map.put("80002","网络异常");
+			map.put("80003","系统异常");
+			map.put("80004","解析接收报文异常");
+			map.put("80006","解析发送报文异常");
+			map.put("80009","拼装合作方通知报文异常");
+			map.put("80010","异步通知合作方失败");
+			map.put("80017","找不到服务编码");
+			map.put("90001","系统异常");
+			map.put("90002","CRM内部错误");
+			map.put("90003","异常报俊");
+			map.put("90004","集团CRM异步通知的订购结果为订购失败");
+			map.put("90005","号码不存在");
+			map.put("99999","其他错误");
+			return map.get(code)==null?"":map.get(code);
+		}
+	@Test
+	public void testName() throws Exception {
+		//pci.getStandarPrice() = 3.000
+		//ppi.getCostPrice()=1.6665
+		/*Double pci = 3.000;  //标准价
+		double ppi = 0.9999; //成本价
+		BigDecimal beforeDiscount = new BigDecimal(ppi).divide(new BigDecimal(pci),6);
+		System.out.println(beforeDiscount);*/
+		
+		/*String xmlStr = "<?xml version=\"1.0\"?>"
+		        +"<all>"  
+				+   "<response>"
+				+ 		"<result>true</result>"
+				+ 		"<code>100</code>"
+				+ 		"<msg>恭喜，提交成功</msg>"
+				+	    "<data>"
+				+ 			"<sid>RO201312232232127348</sid>"
+				+	    "</data>"
+				+   "</response>"
+				+   "<response>"
+				+ 		"<result>双击666</result>"
+				+   "</response>"
+				+"</all>"  ;
+		*/
+		String xmlStr = "<root return=\"0666\" info=\"成功\" taskid=\"1703091703192250120\" code=\"0\" message=\"success\" time=\"2017-03-09 17:12:58\"/>";
+		NamedNodeMap attributes = XmlUtils.getXmlNoteList(xmlStr, "root").item(0).getAttributes();
+
+		String code = attributes.getNamedItem("return").getNodeValue();
+		String msg = attributes.getNamedItem("info").getNodeValue();
+		System.out.println(code);
+		System.out.println(msg);
+	}
+}

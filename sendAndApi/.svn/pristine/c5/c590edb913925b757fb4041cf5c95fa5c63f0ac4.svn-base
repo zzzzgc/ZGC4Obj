@@ -1,0 +1,21 @@
+#===============================================================
+#   kdou_test
+#===============================================================
+kdou_sendUrl=http://liuliang.benshouyou.com:8713/api/net/sendorder
+kdou_queryUrl=http://liuliang.benshouyou.com:8713/api/net/queryorder
+kdou_id=556a2d355532
+kdou_key=749c3676eca0d28c42de6199769f13e8
+kdou_callback=http://106.14.18.108:28083/kdou_callback.do
+#===============================================================
+#   kdou_zhengshi
+#===============================================================
+#kdou_sendUrl=http://liuliang.benshouyou.com:8713/api/net/sendorder
+#kdou_queryUrl=http://liuliang.benshouyou.com:8713/api/net/queryorder
+#kdou_id=
+#kdou_key=
+#kdou_backUrl=http://xxxx/test_callback.do
+
+#testbackUrl
+
+#kdou_backUrl=http://xxxx/kdou_callback.do
+

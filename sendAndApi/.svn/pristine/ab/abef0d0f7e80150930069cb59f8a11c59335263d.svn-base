@@ -1,0 +1,23 @@
+#===============================================================
+#   cyue_test
+#===============================================================
+#cyue_sendUrl=http://api.23456g.com/api/v4/order/submit.json
+#cyue_queryUrl=http://api.23456g.com/api/v2/order/query.json
+#cyue_id=K2acetAKbg
+#cyue_key=FlckHAgVvFnXqQhs
+#cyue_sendBack=http://112.74.48.39:8080/zerogou
+#===============================================================
+#   cyue_zhengshi
+#===============================================================
+cyue_sendUrl=http://api.23456g.com/api/v4/order/submit.json
+cyue_queryUrl=http://api.23456g.com/api/v2/order/query.json
+cyue_id=K2acetAKbg
+cyue_key=FlckHAgVvFnXqQhs
+cyue_sendBack=http://send.zerogou.com
+cyue_id_all=Roj5rgbtT9
+cyue_key_all=CSLHEWhCvSHajhbm
+#cyue_backUrl=http://xxxx/test_callback.do
+
+#testbackUrl
+
+#cyue_backUrl=http://xxxx/cyue_callback.do

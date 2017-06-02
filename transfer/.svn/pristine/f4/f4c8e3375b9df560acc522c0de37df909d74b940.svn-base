@@ -1,0 +1,352 @@
+package com.xinxing.flow.core.downstream.tools;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.httpclient.util.DateUtil;
+import org.apache.http.client.utils.DateUtils;
+
+import com.xinxing.flow.core.downstream.status.CQ_Status;
+import com.xinxing.flow.erorr.CheckSignException;
+import com.xinxing.flow.erorr.NULLParametersException;
+import com.xinxing.flow.erorr.NULLResponseException;
+import com.xinxing.flow.erorr.RepeatOrdersException;
+import com.xinxing.flow.erorr.TransferSystemException;
+import com.xinxing.transfer.common.encry.MD5_HexUtil;
+import com.xinxing.transfer.common.http.HttpUtils;
+import com.xinxing.transfer.common.resource.Constants;
+import com.xinxing.transfer.po.TransferOrdre;
+
+public class Transfer4CQ_downUtils {
+	/**
+	 * 1获取提单请求的参数(封装为map) AA 校验重点
+	 * 
+	 * @param intecmd
+	 *            借口套接字
+	 * @param request
+	 *            请求对象 AA请求
+	 * @return
+	 * @throws NULLParametersException
+	 * @throws CheckSignException
+	 */
+	public static HashMap<String, Object> getSendParam(HttpServletRequest request)
+			throws NULLParametersException, CheckSignException {
+		// 获取文件内容
+		String SIGN = null; // 签名内容
+		String INTECMD = null; // 接口命令字
+		String CTMID = null; // 商户编号
+		String CTMORDID = null; // 商户交易流水号
+		String CTMTIME = null; // 商户交易请求时间
+		String PLAYACC = null; // 手机号码
+		String PDTVALUE = null; // 充值面额
+		String CTMRETURL = null; // 订单结果回调地址
+		String URPROVID = null; // 用户归属省份 ID
+		String ISP = null; // 运营商 YD移动DX电信LT联通
+		String ROAMING_TYPE = null; // 漫游类型 0 省内漫游1全国漫游
+
+		SIGN = request.getParameter("SIGN");
+		INTECMD = request.getParameter("INTECMD");
+		CTMID = request.getParameter("CTMID");
+		CTMORDID = request.getParameter("CTMORDID");
+		CTMTIME = request.getParameter("CTMTIME");
+		PLAYACC = request.getParameter("PLAYACC");
+		PDTVALUE = request.getParameter("PDTVALUE");
+		CTMRETURL = request.getParameter("CTMRETURL");
+		URPROVID = request.getParameter("URPROVID");
+		ISP = request.getParameter("ISP");
+		ROAMING_TYPE = request.getParameter("ROAMING_TYPE");
+
+		// 校验
+		if (INTECMD != null && SIGN != null && CTMID != null && CTMORDID != null && CTMTIME != null && PLAYACC != null
+				&& PDTVALUE != null && CTMRETURL != null && URPROVID != null && ISP != null && ROAMING_TYPE != null) {
+			// 校验参数封装
+			HashMap<String, Object> sendMap = new HashMap<>();
+			sendMap.put("INTECMD", INTECMD);
+			sendMap.put("CTMID", CTMID);
+			sendMap.put("CTMORDID", CTMORDID);
+			sendMap.put("CTMTIME", CTMTIME);
+			sendMap.put("PLAYACC", PLAYACC);
+			sendMap.put("PDTVALUE", PDTVALUE);
+			sendMap.put("CTMRETURL", CTMRETURL);
+			sendMap.put("URPROVID", URPROVID);
+			sendMap.put("ISP", ISP);
+			sendMap.put("ROAMING_TYPE", ROAMING_TYPE);
+
+			String signStr = HttpUtils.getStrByMapOrderByABC(sendMap) + Constants.getString("CQ_Key");
+			String sign = MD5_HexUtil.md5Hex(signStr.toString()).toLowerCase();
+
+			if (SIGN.equals(sign)) {
+				return sendMap;
+			} else {
+				throw new CheckSignException();
+			}
+		} else {
+			throw new NULLParametersException();
+		}
+	}
+
+	/**
+	 * 2 AA提单响应
+	 * 
+	 * @param STATUS
+	 *            订单状态
+	 * @param sendMap
+	 *            下游提单信息
+	 * @return
+	 */
+	@SuppressWarnings("unused")
+	public static String getSendResponseParam(String STATUS, Map<String, Object> sendMap) {
+		// 获取响应参数
+		Map<String, Object> responseMap = new HashMap<>();
+
+		// 获取文件体内容
+		String CTMID = (String) sendMap.get("CTMID"); // 商户编号(固定)
+		String CTMORDID = (String) sendMap.get("CTMORDID"); // 商户交易流水
+		String CTMTIME = (String) sendMap.get("CTMTIME"); // 商户交易请求时间
+		String PLAYACC = (String) sendMap.get("PLAYACC"); // 手机号码
+		String PDTVALUE = (String) sendMap.get("PDTVALUE"); // 充值面额
+		String CTMRETURL = (String) sendMap.get("CTMRETURL"); // 订单结果回调地址
+		String URPROVID = (String) sendMap.get("URPROVID"); // 用户归属省份 ID
+		String ISP = (String) sendMap.get("ISP"); // 运营商 YD 移动 , DX 电信 , LT 联通
+		String ROAMING_TYPE = (String) sendMap.get("ROAMING_TYPE"); // 漫游类型 0
+
+		String sendCTMID = CTMID;// 商户编号
+		String sendCTMORDID = CTMORDID;// 商户交易流水号
+		String TRDREQTIME = null;// 接入方交易请求时间 <非必填
+		String TRDSN = null;// 接入方交易流水号TODO <非必填 上游id 数据库需要添加的字段
+		String TRDACTVALUE = null;// 接入方实际完成充值面值 <非必填
+		String TRDFINTIME = null;// 接入方完成时间 <非必填 
+		responseMap.put("STATUS", STATUS);
+		responseMap.put("CTMID", sendCTMID);
+		responseMap.put("CTMORDID", sendCTMORDID);
+
+		if ("1".equals(STATUS)) {
+			TRDREQTIME = CTMTIME;// 提单时有携带商户请求时间的
+			TRDSN = CTMORDID;// 我们不返回订单,所以我们的订单id为CQ自己的
+			responseMap.put("TRDSN", TRDSN);
+			responseMap.put("TRDREQTIME", TRDREQTIME);
+		}
+		if ("801".equals(STATUS)) {
+			TRDACTVALUE = PDTVALUE;
+			TRDFINTIME = DateUtil.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss");
+			responseMap.put("TRDFINTIME", TRDFINTIME);
+			responseMap.put("TRDACTVALUE", TRDACTVALUE);
+		}
+
+		String resKeyValue = HttpUtils.getStrByMapOrderByABC(responseMap);
+		return resKeyValue;
+	}
+
+	/**
+	 * 获取状态
+	 * 
+	 * @param BBsendOrder
+	 * @return
+	 * @throws NULLResponseException
+	 * @throws RepeatOrdersException
+	 * @throws TransferSystemException
+	 */
+	public static String getSendForStatus(Map<String, String> BBsendOrder)
+			throws TransferSystemException, RepeatOrdersException {
+		String Type = BBsendOrder.get("Type");
+		String STATUS = null;
+
+		switch (Type) {
+		// 提交成功
+		case "4":
+			STATUS = CQ_Status.SEND_SUCCESS.status;
+			break;
+		// 提交失败.
+		case "1":
+			String Msg = BBsendOrder.get("Msg");
+			if ("流水号重复".equals(Msg)) {
+				throw new RepeatOrdersException();
+			}
+			STATUS = CQ_Status.NOTHING.status;
+			if ("未授权IP".equals(Msg)) {
+				throw new TransferSystemException();
+			}
+			break;
+		default:
+			// TODO 待处理,提单失败,异常处理
+			break;
+		}
+
+		return STATUS;
+	}
+
+	/**
+	 * 获取异常状态
+	 * 
+	 * @param erorr
+	 * @return
+	 */
+	public static String getErorrStatus(String erorr) {
+		return erorr;
+	}
+
+	/**
+	 * 1获取查询请求的参数(封装为map) AA 校验重点
+	 * 
+	 * @param request
+	 *            请求对象 AA请求
+	 * @return 封装好的查询参数 文件体内容
+	 * @throws NULLParametersException
+	 * @throws CheckSignException
+	 * 
+	 */
+	public static Map<String, Object> getQueryParam(HttpServletRequest request)
+			throws CheckSignException, NULLParametersException {
+
+		Map<String, Object> map = new HashMap<>();
+		String SIGN = request.getParameter("SIGN");
+		String INTECMD = request.getParameter("INTECMD");
+		String CTMID = request.getParameter("CTMID");
+		String CTMORDID = request.getParameter("CTMORDID");
+
+		if (CTMID != null && CTMORDID != null && INTECMD != null && SIGN != null) {
+			map.put("CTMID", CTMID);
+			map.put("CTMORDID", CTMORDID);
+			map.put("INTECMD", INTECMD);
+
+			String signStr = HttpUtils.getStrByMapOrderByABC(map) + Constants.getString("CQ_Key");
+			String sign = MD5_HexUtil.md5Hex(signStr);
+
+			if (SIGN.equals(sign)) {
+				return map;
+			} else {
+				throw new CheckSignException();
+			}
+		} else {
+			throw new NULLParametersException();
+		}
+	}
+
+	public static void main(String[] args) {
+		Map<String, Object> map = new HashMap<>();
+
+		String CTMID = "600012";
+		String CTMORDID = "123456Testcc";
+		String INTECMD = "queryFlowOrder";
+		map.put("CTMID", CTMID);
+		map.put("CTMORDID", CTMORDID);
+		map.put("INTECMD", INTECMD);
+
+		String sign2 = HttpUtils.getStrByMapOrderByABC(map) + "10010";
+		String SIGN = MD5_HexUtil.md5Hex(sign2);
+
+		map.remove("INTECMD");
+		String abc = HttpUtils.getStrByMapOrderByABC(map);
+
+		System.out.println("SIGN:" + SIGN);
+		System.out.println("param:" + abc);
+	}
+
+	/*
+	 * public static void main(String[] args) { HashMap<String, Object> sendMap
+	 * = new HashMap<>(); sendMap.put("asdasd", "123"); sendMap.put("asdasd",
+	 * "asd"); sendMap.put("asdasd", "a2sd4");
+	 * 
+	 * String signStr = HttpUtils.getStrByMapOrderByABC(sendMap) + 10010; String
+	 * sign = MD5_HexUtil.md5Hex(signStr).toLowerCase();
+	 * System.out.println(sign); }
+	 */
+
+	/**
+	 * 获取状态
+	 * 
+	 * @param BBQueryOrder
+	 * @return
+	 * @throws NULLResponseException
+	 */
+	public static String getQueryForStatus(Map<String, String> BBqueryOrder) throws NULLResponseException {
+		String Type = BBqueryOrder.get("Type");
+		String Code = BBqueryOrder.get("Code");
+		String STATUS = null;
+
+		switch (Type) {
+		// 查询成功
+		case "4":
+			switch (Code) {
+			case "SUCCESS":
+				STATUS = CQ_Status.QUERY_SUCCESS.status;
+				break;
+			case "WAIT":
+				STATUS = CQ_Status.QUERY_WAIT.status;
+				break;
+			case "ERROR":
+				STATUS = CQ_Status.QUERY_ERROR.status;
+				break;
+			default:
+				STATUS = CQ_Status.TransferSystemException.status;
+				break;
+			}
+			break;
+		// 查询失败
+		case "1":
+			STATUS = CQ_Status.QUERY_ERROR.status;
+			String Msg = BBqueryOrder.get("Msg");
+			if ("未授权IP".equals(Msg)) {
+				throw new NULLResponseException();
+			}
+			break;
+		default:
+			STATUS = CQ_Status.TransferSystemException.status;
+			break;
+		}
+		return STATUS;
+	}
+
+	/**
+	 * 2 AA查询响应
+	 * 
+	 * 相当于跳过  YG->CQ 的一次转换,
+	 * 相当于 YG->CQ转换
+	 * @param orderInfo 
+	 * 
+	 * @param STATUS
+	 *            订单状态
+	 * @param sendMap
+	 *            下游查询信息
+	 * @return 查询响应参数
+	 */
+	public static String getQueryResponseParam(String status, TransferOrdre orderInfo, Map<String, Object> queryMap) {
+		String TRADESTATUS = status;
+		String CTMORDID = (String) queryMap.get("CTMORDID");// 商户交易流水号
+		String CTMID = (String) queryMap.get("CTMID");// 商户编号
+		String INTECMD = (String) queryMap.get("INTECMD");// 交易状态码
+		
+		
+		HashMap<String, Object> responseMap = new HashMap<>();
+		responseMap.put("TRADESTATUS", TRADESTATUS);
+		responseMap.put("CTMORDID", CTMORDID);
+		responseMap.put("CTMID", CTMID);
+		responseMap.put("INTECMD", INTECMD);
+		//responseMap.put("TRADEERROR", TRADEERROR);//交易错误码 <非必填
+
+		if ("1".equals(status)) {
+			String TRDSN=CTMORDID;//接入方流水号  <非必填
+			String TRDREQTIME =DateUtils.formatDate(orderInfo.getStarttime(), "yyyy-MM-dd HH:mm:ss");// 接入方下单时间 <非必填
+			String TRDFINTIME =DateUtil.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss");// 接入方完成时间 <非必填
+			String TRDACTVALUE=orderInfo.getTypeflow().split(",")[0];// 接入方实际完成充值面值 <非必填
+			responseMap.put("TRDSN", TRDSN);// 接入方流水号 上游id 数据库的修改 <非必填
+			responseMap.put("TRDFINTIME",  TRDFINTIME  );
+			responseMap.put("TRDREQTIME",  TRDREQTIME  );
+			responseMap.put("TRDACTVALUE", TRDACTVALUE);
+		}
+		return HttpUtils.getStrByMapOrderByABC(responseMap);
+	}
+
+	/**
+	 * 查询资金
+	 * @param request
+	 * @return
+	 */
+	public static Map<String, Object> getQueryCapitalParam(HttpServletRequest request) {
+		return null;
+	}
+
+}

@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xinxing.transfer.dao.TransferOrdreMapper" >
+  <resultMap id="BaseResultMap" type="com.xinxing.transfer.po.TransferOrdre" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="downId" property="downid" jdbcType="VARCHAR" />
+    <result column="supplierId" property="supplierid" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="typeFlow" property="typeflow" jdbcType="VARCHAR" />
+    <result column="callbackAddress" property="callbackaddress" jdbcType="VARCHAR" />
+    <result column="callbackData" property="callbackdata" jdbcType="VARCHAR" />
+    <result column="callbackTime" property="callbacktime" jdbcType="TIMESTAMP" />
+    <result column="startTime" property="starttime" jdbcType="TIMESTAMP" />
+    <result column="endTime" property="endtime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, downId, supplierId, phone, status, typeFlow, callbackAddress, callbackData, callbackTime, 
+    startTime, endTime
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.xinxing.transfer.po.TransferOrdreExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from transfer_ordre
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from transfer_ordre
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from transfer_ordre
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.xinxing.transfer.po.TransferOrdreExample" >
+    delete from transfer_ordre
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.xinxing.transfer.po.TransferOrdre" >
+    insert into transfer_ordre (id, downId, supplierId, 
+      phone, status, typeFlow, 
+      callbackAddress, callbackData, callbackTime, 
+      startTime, endTime)
+    values (#{id,jdbcType=INTEGER}, #{downid,jdbcType=VARCHAR}, #{supplierid,jdbcType=VARCHAR}, 
+      #{phone,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{typeflow,jdbcType=VARCHAR}, 
+      #{callbackaddress,jdbcType=VARCHAR}, #{callbackdata,jdbcType=VARCHAR}, #{callbacktime,jdbcType=TIMESTAMP}, 
+      #{starttime,jdbcType=TIMESTAMP}, #{endtime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xinxing.transfer.po.TransferOrdre" >
+    insert into transfer_ordre
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="downid != null" >
+        downId,
+      </if>
+      <if test="supplierid != null" >
+        supplierId,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="typeflow != null" >
+        typeFlow,
+      </if>
+      <if test="callbackaddress != null" >
+        callbackAddress,
+      </if>
+      <if test="callbackdata != null" >
+        callbackData,
+      </if>
+      <if test="callbacktime != null" >
+        callbackTime,
+      </if>
+      <if test="starttime != null" >
+        startTime,
+      </if>
+      <if test="endtime != null" >
+        endTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="downid != null" >
+        #{downid,jdbcType=VARCHAR},
+      </if>
+      <if test="supplierid != null" >
+        #{supplierid,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="typeflow != null" >
+        #{typeflow,jdbcType=VARCHAR},
+      </if>
+      <if test="callbackaddress != null" >
+        #{callbackaddress,jdbcType=VARCHAR},
+      </if>
+      <if test="callbackdata != null" >
+        #{callbackdata,jdbcType=VARCHAR},
+      </if>
+      <if test="callbacktime != null" >
+        #{callbacktime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="starttime != null" >
+        #{starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endtime != null" >
+        #{endtime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.xinxing.transfer.po.TransferOrdreExample" resultType="java.lang.Integer" >
+    select count(*) from transfer_ordre
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update transfer_ordre
+    <set >
+      <if test="record.id != null" >
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.downid != null" >
+        downId = #{record.downid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.supplierid != null" >
+        supplierId = #{record.supplierid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.phone != null" >
+        phone = #{record.phone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.status != null" >
+        status = #{record.status,jdbcType=INTEGER},
+      </if>
+      <if test="record.typeflow != null" >
+        typeFlow = #{record.typeflow,jdbcType=VARCHAR},
+      </if>
+      <if test="record.callbackaddress != null" >
+        callbackAddress = #{record.callbackaddress,jdbcType=VARCHAR},
+      </if>
+      <if test="record.callbackdata != null" >
+        callbackData = #{record.callbackdata,jdbcType=VARCHAR},
+      </if>
+      <if test="record.callbacktime != null" >
+        callbackTime = #{record.callbacktime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.starttime != null" >
+        startTime = #{record.starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.endtime != null" >
+        endTime = #{record.endtime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update transfer_ordre
+    set id = #{record.id,jdbcType=INTEGER},
+      downId = #{record.downid,jdbcType=VARCHAR},
+      supplierId = #{record.supplierid,jdbcType=VARCHAR},
+      phone = #{record.phone,jdbcType=VARCHAR},
+      status = #{record.status,jdbcType=INTEGER},
+      typeFlow = #{record.typeflow,jdbcType=VARCHAR},
+      callbackAddress = #{record.callbackaddress,jdbcType=VARCHAR},
+      callbackData = #{record.callbackdata,jdbcType=VARCHAR},
+      callbackTime = #{record.callbacktime,jdbcType=TIMESTAMP},
+      startTime = #{record.starttime,jdbcType=TIMESTAMP},
+      endTime = #{record.endtime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xinxing.transfer.po.TransferOrdre" >
+    update transfer_ordre
+    <set >
+      <if test="downid != null" >
+        downId = #{downid,jdbcType=VARCHAR},
+      </if>
+      <if test="supplierid != null" >
+        supplierId = #{supplierid,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="typeflow != null" >
+        typeFlow = #{typeflow,jdbcType=VARCHAR},
+      </if>
+      <if test="callbackaddress != null" >
+        callbackAddress = #{callbackaddress,jdbcType=VARCHAR},
+      </if>
+      <if test="callbackdata != null" >
+        callbackData = #{callbackdata,jdbcType=VARCHAR},
+      </if>
+      <if test="callbacktime != null" >
+        callbackTime = #{callbacktime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="starttime != null" >
+        startTime = #{starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endtime != null" >
+        endTime = #{endtime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xinxing.transfer.po.TransferOrdre" >
+    update transfer_ordre
+    set downId = #{downid,jdbcType=VARCHAR},
+      supplierId = #{supplierid,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      status = #{status,jdbcType=INTEGER},
+      typeFlow = #{typeflow,jdbcType=VARCHAR},
+      callbackAddress = #{callbackaddress,jdbcType=VARCHAR},
+      callbackData = #{callbackdata,jdbcType=VARCHAR},
+      callbackTime = #{callbacktime,jdbcType=TIMESTAMP},
+      startTime = #{starttime,jdbcType=TIMESTAMP},
+      endTime = #{endtime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

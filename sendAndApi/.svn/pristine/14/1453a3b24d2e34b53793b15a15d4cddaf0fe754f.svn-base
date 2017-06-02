@@ -1,0 +1,23 @@
+#===============================================================
+#   lliu_test
+#===============================================================
+lliu_sendUrl=http://llcz.net/trafficweb/api/order/index.php
+lliu_queryUrl=http://llcz.net/trafficweb/api/query/index.php
+lliu_id=100240
+lliu_key=auwF7AfQYrXjMAvB
+lliu_iv=FZcAse9NSCZcAUwb
+lliu_callback=http://106.14.18.108:28083/lliu_callback.do
+#===============================================================
+#   lliu_zhengshi
+#===============================================================
+#lliu_sendUrl=http://llcz.net/trafficweb/api/order/index.php
+#lliu_queryUrl=http://llcz.net/trafficweb/api/query/index.php
+#lliu_id=100240
+#lliu_key=auwF7AfQYrXjMAvB
+#AES_iv=FZcAse9NSCZcAUwb
+#lliu_callback=http://send.zerogou.com/lliu_callback.do
+#lliu_backUrl=http://xxxx/test_callback.do
+
+#testbackUrl
+
+#lliu_backUrl=http://xxxx/lliu_callback.do

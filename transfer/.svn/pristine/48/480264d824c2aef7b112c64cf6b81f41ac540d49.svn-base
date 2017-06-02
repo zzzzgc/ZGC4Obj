@@ -1,0 +1,401 @@
+package com.xinxing.flow.core.downstream.impl;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.ServletContextAware;
+
+import com.xinxing.flow.core.downstream.TransferDownstream;
+import com.xinxing.flow.core.downstream.status.CQ_Status;
+import com.xinxing.flow.core.downstream.tools.Transfer4CQ_downUtils;
+import com.xinxing.flow.core.transfer.impl.Transfer_YG_CQ;
+import com.xinxing.flow.core.upstream.TransferUpstream;
+import com.xinxing.flow.erorr.CheckSignException;
+import com.xinxing.flow.erorr.NULLForProductException;
+import com.xinxing.flow.erorr.NULLOrderIdException;
+import com.xinxing.flow.erorr.NULLParametersException;
+import com.xinxing.flow.erorr.NULLResponseException;
+import com.xinxing.flow.erorr.RepeatOrdersException;
+import com.xinxing.flow.erorr.TransferSystemException;
+import com.xinxing.flow.log.QueryBalanceLog;
+import com.xinxing.flow.log.QueryOrderLogNorm;
+import com.xinxing.flow.log.sendOrderLogNorm;
+import com.xinxing.flow.status.whoId;
+import com.xinxing.transfer.common.encry.MD5_HexUtil;
+import com.xinxing.transfer.common.http.HttpUtils;
+import com.xinxing.transfer.po.TransferOrdre;
+import com.xinxing.transfer.service.TransferOrdreService;
+
+public class Transfer4CQ_down implements TransferDownstream, ServletContextAware {
+
+	private static final Logger log = Logger.getLogger("TransferCore_Transfer4CQ_down");
+
+	@Autowired
+	private TransferUpstream transfer4HuaYi_up;
+
+	@Autowired
+	private Transfer_YG_CQ transfer_YG_CQ;
+
+	@Autowired
+	private TransferOrdreService TransferOrdreService;
+
+	@Override
+	public void sendOrder(HttpServletRequest request, HttpServletResponse response) {
+		log.info("提单(CQ-->YG)");
+		log.info("获取CQ订单请求:" + HttpUtils.getReqPostString(request, log));
+
+		// 错误
+		String erorr = null;
+		Map<String, Object> sendMap = null;
+		// BB响应
+		Map<String, String> sendRequestMap = null;
+		Map<String, Object> responseParams = null;
+		String resKeyValue = null;
+		String CTMORDID = null;
+		String PLAYACC = null;
+		String SIGN = null;
+
+		// 提单状态
+		String status = null;
+		try {
+			// 重点校验
+			sendMap = Transfer4CQ_downUtils.getSendParam(request);
+
+			// 向YG提单
+			sendRequestMap = transfer4HuaYi_up.sendOrder(sendMap);
+
+			if (sendRequestMap != null && sendRequestMap.size() > 0) {
+				status = Transfer4CQ_downUtils.getSendForStatus(sendRequestMap);
+				resKeyValue = Transfer4CQ_downUtils.getSendResponseParam(status, sendMap);
+				responseParams = HttpUtils.getReqParams(resKeyValue);
+				String signStr = HttpUtils.getStrByMapOrderByABC(responseParams);
+				SIGN = MD5_HexUtil.md5Hex(signStr).toLowerCase();
+			} else {
+				throw new NULLResponseException();
+			}
+		} catch (NULLForProductException e) {
+			erorr = sendOrderLogNorm.upEorror(sendMap, resKeyValue, CTMORDID, log, e);
+		} catch (NULLResponseException e) {
+			erorr = sendOrderLogNorm.upEorror(sendMap, resKeyValue, CTMORDID, log, e);
+		} catch (NULLParametersException e) {
+			erorr = sendOrderLogNorm.upEorror(sendMap, resKeyValue, CTMORDID, log, e);
+		} catch (CheckSignException e) {
+			erorr = sendOrderLogNorm.upEorror(sendMap, resKeyValue, CTMORDID, log, e);
+		} catch (TransferSystemException e) {
+			erorr = sendOrderLogNorm.upEorror(sendMap, resKeyValue, CTMORDID, log, e);
+		} catch (RepeatOrdersException e) {
+			erorr = sendOrderLogNorm.upEorror(sendMap, resKeyValue, CTMORDID, log, e);
+		} catch (Exception e) {
+			log.error(e.getMessage() + e);
+			erorr = CQ_Status.TransferSystemException.status;
+			sendOrderLogNorm.ExceptionLog("下游->" + sendMap + ",上游->" + resKeyValue, CTMORDID, "CQ", log);
+		}
+
+		Map<String, Object> map = null;
+		// 校验错误是否存在
+		if (erorr != null) {
+			status = Transfer4CQ_downUtils.getErorrStatus(erorr);
+			// sendMap=HttpUtils.getReqParams(request);
+			if (sendMap != null) {
+				resKeyValue = Transfer4CQ_downUtils.getSendResponseParam(status, sendMap);
+			} else {
+				map = new HashMap<String, Object>();
+				Map<String, String> CQrequestParams = HttpUtils.getReqParams(request);
+				map.putAll(CQrequestParams);
+				sendMap = map;
+				sendOrderLogNorm.ExceptionLog("彩旗请求参数缺失异常,请联系彩旗技术,彩旗参数-->" + sendMap, CTMORDID, "CQ", log);
+			}
+		} else {
+			try {
+				transfer_YG_CQ.addOrder(status, sendMap);
+			} catch (Exception e) {
+				sendOrderLogNorm.ExceptionLog("数据库异常,请联系技术" + resKeyValue, CTMORDID, "CQ", log);
+			}
+		}
+
+		// 设置响应体
+		PrintWriter out = null;
+		try {
+			response.setHeader("SIGN", SIGN);
+			response.setHeader("accept", "*/*");
+			response.setCharacterEncoding("GBK");
+			response.setContentType("application/x-www-form-urlencoded");
+			response.setHeader("connection", "Keep-Alive");
+			response.setHeader("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+			out = response.getWriter();
+			out.append(resKeyValue);
+		} catch (IOException e) {
+			QueryOrderLogNorm.ExceptionLog(PLAYACC, CTMORDID, "CQ", log, "响应异常");
+		} finally {
+			if (out != null) {
+				out.close();
+			}
+		}
+	}
+
+	@Override
+	public void queryOrder(HttpServletRequest request, HttpServletResponse response) {
+		log.info("进入QC To YG查单通道");
+		log.info("获取CQ查询请求:" + HttpUtils.getReqPostString(request, log));
+
+		String SIGN = null;
+		String status = null;
+		String resKeyValue = null;
+		boolean isUpdate = false;
+		String CTMORDID = null;
+		// 错误
+		String erorr = null;
+		// 重点校验
+		Map<String, Object> queryMap = null;
+		try {
+			queryMap = Transfer4CQ_downUtils.getQueryParam(request);
+
+			CTMORDID = request.getParameter("CTMORDID");
+
+			Map<String, String> queryOrder = transfer4HuaYi_up.queryOrder(queryMap);
+			if (queryOrder != null && queryOrder.size() > 0) {
+				// TODO 需要改进为使用中转类实现
+				status = Transfer4CQ_downUtils.getQueryForStatus(queryOrder);
+				TransferOrdre orderInfo = TransferOrdreService.getOrderInfo(whoId.DOWNID.status, CTMORDID);
+				resKeyValue = Transfer4CQ_downUtils.getQueryResponseParam(status, orderInfo, queryMap);
+				Map<String, Object> responseParams = HttpUtils.getReqParams(resKeyValue);
+				String signStr = HttpUtils.getStrByMapOrderByABC(responseParams);
+				SIGN = MD5_HexUtil.md5Hex(signStr).toLowerCase();
+			} else {
+				throw new TransferSystemException();// 上游没传值反系统异常
+			}
+		} catch (NULLForProductException e) {
+			erorr = QueryOrderLogNorm.upEorror(queryMap, resKeyValue, CTMORDID, log, e);
+		} catch (NULLResponseException e) {
+			erorr = QueryOrderLogNorm.upEorror(queryMap, resKeyValue, CTMORDID, log, e);
+		} catch (NULLParametersException e) {
+			erorr = QueryOrderLogNorm.upEorror(queryMap, resKeyValue, CTMORDID, log, e);
+		} catch (CheckSignException e) {
+			erorr = QueryOrderLogNorm.upEorror(queryMap, resKeyValue, CTMORDID, log, e);
+		} catch (NULLOrderIdException e) {
+			erorr = QueryOrderLogNorm.upEorror(queryMap, resKeyValue, CTMORDID, log, e);
+		} catch (TransferSystemException e) {
+			erorr = QueryOrderLogNorm.upEorror(queryMap, resKeyValue, CTMORDID, log, e);
+		} catch (Exception e) {
+			log.error(e.getMessage() + e);
+			erorr = CQ_Status.TransferSystemException.status;
+			sendOrderLogNorm.ExceptionLog("下游->" + queryMap + ",上游->" + resKeyValue, CTMORDID, "CQ", log);
+		}
+
+		Map<String, Object> map = null;
+		if (erorr != null) {
+			status = Transfer4CQ_downUtils.getErorrStatus(erorr);
+			if (queryMap != null) {
+				// 异常AA响应
+				resKeyValue = Transfer4CQ_downUtils.getQueryResponseParam(status, null, queryMap);
+			} else {
+				Map<String, String> CQrequestParams = HttpUtils.getReqParams(request);
+				map = new HashMap<String, Object>();
+				Object obj = (Object) CQrequestParams;
+				Field[] declaredFields = obj.getClass().getDeclaredFields();
+				for (Field field : declaredFields) {
+					field.setAccessible(true);
+					try {
+						map.put(field.getName(), field.get(obj));
+					} catch (Exception e) {
+						sendOrderLogNorm.ExceptionLog(map.toString(), CTMORDID, "CQ", log);
+					}
+				}
+			}
+		} else {
+			transfer_YG_CQ.queryUpdateOredr(status, queryMap);
+		}
+
+		// 设置响应体
+		PrintWriter out = null;
+		try {
+			response.setHeader("SIGN", SIGN);
+			response.setHeader("accept", "*/*");
+			response.setCharacterEncoding("GBK");
+			response.setContentType("application/x-www-form-urlencoded");
+			response.setHeader("connection", "Keep-Alive");
+			response.setHeader("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+			out = response.getWriter();
+			out.append(resKeyValue);
+		} catch (IOException e) {
+			QueryOrderLogNorm.ExceptionLog("订单查询响应异常", CTMORDID, "CQ", log, "响应异常");
+		} finally {
+			if (out != null) {
+				out.close();
+			}
+		}
+
+		if (isUpdate) {
+
+		}
+	}
+
+//	@Override
+//	public void download(HttpServletRequest request, HttpServletResponse response) {
+//		log.info("进入QC To YG查资金通道");
+//		log.info("获取CQ查询请求:" + HttpUtils.getReqPostString(request, log));
+//		// 签名
+//		String SIGN = null;
+//		// 接口套接字
+//		String CTMORDID = null;
+//		// 错误
+//		String erorr = null;
+//		// 重点校验
+//		Map<String, Object> queryMap = null;
+//		// 返回参数
+//		String erorrResKeyValue = null;
+//		// 返回状态
+//		String erorrStatus = null;
+//
+//		String path = servletContext.getRealPath("/");
+//
+//		String fileName = "优狗充值 " + DateFormatUtils.format(TimeUtils.addDayForNow(new Date(), -1), "yyyyMMdd") + ".txt";
+//		// String filename = "D:"+File.separator+"logs"+File.separator+fileName;
+//		String fileUrl = Constants.getString("CQ_downloadFile") + File.separator + fileName;
+//
+//		File file = new File(fileUrl);
+//
+//		System.out.println("url:" + fileUrl);
+//		System.out.println("fileName:" + fileName);
+//
+//		// 设置响应体
+//		PrintWriter out = null;
+//		BufferedReader br = null;
+//		try {
+//			response.setHeader("SIGN", SIGN);
+//			response.setHeader("accept", "*/*");
+//			response.setCharacterEncoding("utf-8");
+//			response.setContentType("multipart/form-data");
+//			response.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
+//			response.setHeader("connection", "Keep-Alive");
+//			response.setHeader("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+//			out = response.getWriter();
+//
+//			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
+//			br = new BufferedReader(inputStreamReader);
+//			String data = null;
+//			while ((data = br.readLine()) != null) {
+//				out.write(data);
+//			}
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			QueryOrderLogNorm.ExceptionLog("订单查询响应异常", CTMORDID, "CQ", log, "响应异常");
+//		} finally {
+//			if (br != null) {
+//				try {
+//					br.close();
+//				} catch (IOException e) {
+//					log.error("写出流关闭异常");
+//				}
+//			}
+//			if (out != null) {
+//				out.close();
+//			}
+//		}
+//	}
+
+
+	@Override
+	public void queryBalance(HttpServletRequest request, HttpServletResponse response) {
+		log.info("进入CQ余额查询");
+		log.info("CQ余额查询请求>>" + HttpUtils.getReqParams(request));
+		// 商户编号
+		String CTMID = request.getParameter("CTMID");
+		// 错误
+		String erorr = null;
+		String status = "";
+		String resKeyValue = "";
+		String SIGN = "";
+		// 重点校验
+		Map<String, Object> queryMap = null;
+		try {
+			queryMap = Transfer4CQ_downUtils.getQueryBalanceParam(request);
+			// 向上游发起余额查询
+			Map<String, String> queryBalanceResp = transfer4HuaYi_up.queryBalence(queryMap);
+			if (queryBalanceResp != null && queryBalanceResp.size() > 0) {
+				// TODO 需要改进为使用中转类实现
+				status = Transfer4CQ_downUtils.getQueryBStatus(queryBalanceResp);
+				String CTMACCRES = queryBalanceResp.get("Msg");
+				CTMACCRES = CTMACCRES.replace(".0", ".0000");
+				resKeyValue = Transfer4CQ_downUtils.getQueryBalanceRespParam(status, CTMACCRES, queryMap);
+				Map<String, Object> responseParams = HttpUtils.getReqParams(resKeyValue);
+				String signStr = HttpUtils.getStrByMapOrderByABC(responseParams);
+				SIGN = MD5_HexUtil.md5Hex(signStr).toLowerCase();
+			} else {
+				throw new TransferSystemException();// 上游没传值反系统异常
+			}
+		} catch (NULLResponseException e) {
+			erorr = QueryBalanceLog.upError(queryMap, resKeyValue, CTMID, log, e);
+		} catch (NULLParametersException e) {
+			erorr = QueryBalanceLog.upError(queryMap, resKeyValue, CTMID, log, e);
+		} catch (CheckSignException e) {
+			erorr = QueryBalanceLog.upError(queryMap, resKeyValue, CTMID, log, e);
+		} catch (TransferSystemException e) {
+			erorr = QueryBalanceLog.upError(queryMap, resKeyValue, CTMID, log, e);
+		} catch (Exception e) {
+			log.error(e.getMessage() + e);
+			erorr = CQ_Status.TransferSystemException.status;
+			sendOrderLogNorm.ExceptionLog("下游->" + queryMap + ",上游->" + resKeyValue, CTMID, "CQ", log);
+		}
+
+		Map<String, Object> map = null;
+		if (erorr != null) {
+			status = Transfer4CQ_downUtils.getErorrStatus(erorr);
+			if (queryMap != null) {
+				// 异常AA响应
+				resKeyValue = Transfer4CQ_downUtils.getQueryResponseParam(status, null, queryMap);
+			} else {
+				Map<String, String> CQrequestParams = HttpUtils.getReqParams(request);
+				map = new HashMap<String, Object>();
+				Object obj = (Object) CQrequestParams;
+				Field[] declaredFields = obj.getClass().getDeclaredFields();
+				for (Field field : declaredFields) {
+					field.setAccessible(true);
+					try {
+						map.put(field.getName(), field.get(obj));
+					} catch (Exception e) {
+						sendOrderLogNorm.ExceptionLog(map.toString(), CTMID, "CQ", log);
+					}
+				}
+			}
+		}
+
+		// 设置响应体
+		PrintWriter out = null;
+		try {
+			response.setHeader("SIGN", SIGN);
+			response.setHeader("accept", "*/*");
+			response.setCharacterEncoding("GBK");
+			response.setContentType("application/x-www-form-urlencoded");
+			response.setHeader("connection", "Keep-Alive");
+			response.setHeader("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+			out = response.getWriter();
+			out.append(resKeyValue);
+		} catch (IOException e) {
+			log.error("余额查询响应异常", e);
+		} finally {
+			if (out != null) {
+				out.close();
+			}
+		}
+
+	}
+	private ServletContext servletContext;
+
+	@Override
+	public void setServletContext(ServletContext servletContext) {
+		// TODO Auto-generated method stub
+		this.servletContext = servletContext;
+	}
+
+
+}

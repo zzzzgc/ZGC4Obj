@@ -1,0 +1,134 @@
+package com.xinxing.o.boss.business.provider.other.testsdlt1.api;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.o.boss.business.provider.api.supplier.api.SendApi;
+import com.xinxing.o.boss.business.provider.other.testsdlt1.util.Testsdlt1Util;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.util.CommonUtils;
+import com.xinxing.o.boss.common.util.FlowQueryLogUtils;
+import com.xinxing.o.boss.common.util.FlowSendLogUtils;
+import com.xinxing.o.boss.common.xml.XmlUtils;
+
+public class TestSdltSendApiImpl implements SendApi {
+
+	private static final Logger logger = Logger.getLogger(TestSdltSendApiImpl.class);
+	
+	/* 提单请求
+	 * (non-Javadoc)
+	 * @see com.xinxing.o.boss.business.provider.api.supplier.api.SendApi#send(com.xinxing.boss.business.api.domain.SendOrderInfo)
+	 * @author Administrator
+	 */
+	@Override
+	public SendOrderResult send(SendOrderInfo sendOrderInfo) {
+		String orderId = sendOrderInfo.getOrderId();
+		String url = Constants.getString("testsdlt1_sendUrl").trim();
+		String sendRequest = Testsdlt1Util.getSendParam(sendOrderInfo);
+		SendOrderResult result = null;
+		FlowSendLogUtils.sendReqLog(logger, orderId, sendRequest);
+		//流量提单
+		String response = HttpUtils.sendPost(url, sendRequest);
+		FlowSendLogUtils.sendResLog(logger, orderId, response);
+		try {
+			if(StringUtils.isNotBlank(response)) {
+				//获取xml error节点值
+				String error = XmlUtils.getXmlNoteValue(response, "response/error/text()");
+				//获取错误信息
+				String msg = Testsdlt1Util.getErrMsg(error);
+				//响应中error不为0，请求异常，其余xml标签的值失效。
+				if("0".equals(error)) {
+					result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status, null, orderId);
+				}else{
+					result = new SendOrderResult(SendOrderStatus.FAILED.status, error + ":" + msg, orderId);
+				}
+			}else{
+				result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "充值请求无响应,请联系技术人员", orderId);
+			}
+		} catch (Exception e) {
+			result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "系统异常,请联系技术人员", orderId);
+			FlowSendLogUtils.sendExceptionLog(logger, orderId, e);
+		}
+		return result;
+	}
+	/**
+	 * 返回xml格式
+	   <?xml version="1.0" encoding="UTF-8"?>
+		-<response>
+		<userid> xxx</userid> //用户编号
+		<Porderid>xxx</Porderid> //山东联通平台订单号
+		<orderid> xxx</orderid> //用户订单号
+		<account>xxx</account> //需要充值的手机号码
+		<face> xxx</face> //充值面值
+		<amount>1</amount> //购买数量
+		<starttime>xxx</starttime>//开始时间
+		<state> xxx</state> //订单状态
+		<endtime>xxx</endtime>//结束时间
+		<error> xxx</error> //错误提示（详见附录3.2）
+		</response>
+	 */
+	@Override
+	public Map<String, SendOrderResult> querys(List<SendOrderInfo> sendOrderInfo) {
+		Map<String, SendOrderResult> map = new HashMap<String, SendOrderResult>();
+		SendOrderResult result = null;
+		String providerOrderId = "";
+		for(SendOrderInfo orderInfo : sendOrderInfo) {
+			try {
+				String orderId = orderInfo.getOrderId();
+				//供应商平台订单号
+				providerOrderId = orderInfo.getSupplierOrderId();
+				String queryUrl = Constants.getString("testsdlt1_queryUrl").trim();
+				String queryRequest = Testsdlt1Util.getQueryParam(orderInfo);
+				//post请求结果
+				String queryResult = HttpUtils.sendPost(queryUrl, queryRequest);
+				FlowQueryLogUtils.queryReqLog(logger, orderId, queryResult);
+				if(StringUtils.isNotBlank(queryResult)) {
+					//获取xml state节点值
+					String state = XmlUtils.getXmlNoteValue(queryResult, "response/state/text()");
+					String error = XmlUtils.getXmlNoteValue(queryResult, "response/error/text()");
+					if("0".equals(error)) {
+						if("1".equals(state)) {
+							result = new SendOrderResult(SendOrderStatus.SUCCESS.status, null, providerOrderId);
+						}else if("0".equals(state) || "8".equals(state)) {
+							result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status, null, providerOrderId);
+						}else if("2".equals(state)) {
+							result = new SendOrderResult(SendOrderStatus.FAILED.status, "查询结果:充值失败,请联系技术人员", providerOrderId);
+						}
+					}else{
+						result = new SendOrderResult(SendOrderStatus.FAILED.status, "查询出错,请联系技术人员", providerOrderId);
+					}
+				}else{
+					result = new SendOrderResult(SendOrderStatus.FAILED.status, "查询结果为空,请联系技术人员", providerOrderId);
+				}
+			} catch (Exception e) {
+				result = new SendOrderResult(SendOrderStatus.FAILED.status, "系统异常,请联系技术人员", providerOrderId);
+				FlowQueryLogUtils.queryExceptionLog(logger, CommonUtils.getLogParamListId(sendOrderInfo), e);
+			}
+			map.put(providerOrderId, result);
+		}
+		return map;
+	}
+
+	
+	@Override
+	public SendOrderResult query(SendOrderInfo orderInfo) {
+		SendOrderResult result = null;
+		List<SendOrderInfo> list = new ArrayList<SendOrderInfo>();
+		list.add(orderInfo);
+		Map<String, SendOrderResult> map = querys(list);
+		if(map != null) {
+			result = map.get(orderInfo.getOrderId());
+		}
+		return result;
+	}
+
+}

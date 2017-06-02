@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+            http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+	<!-- @Autowired -->
+	<bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
+	
+	<!-- 获取propertise配置文件  S -->
+	<bean id="messageSource"
+		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>file:src/main/webapp/WEB-INF/config/propertise/upAndDownPro/down/CQ_setting_local</value>
+				<value>file:src/main/webapp/WEB-INF/config/propertise/upAndDownPro/up/YG_setting_local</value>
+			</list>
+		</property>
+		<property name="cacheSeconds" value="36000" />
+	</bean>
+	
+	<bean id="constants" class="com.xinxing.transfer.common.resource.Constants">
+		<property name="messageSource" ref="messageSource" />
+	</bean>	 
+	<!-- 获取propertise配置文件  E -->
+	
+	<!-- JDBC DataSource S -->
+
+	<context:property-placeholder location="file:src/main/webapp/WEB-INF/config/propertise/setting_local.properties" />
+
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<!--驱动名称 -->
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<!--JDBC连接串 -->
+		<property name="url" value="${jdbc.url}" />
+		<!--数据库名称 -->
+		<property name="username" value="${jdbc.username}" />
+		<!--数据库密码 -->
+		<property name="password" value="${jdbc.password}" />
+		<!--初始化大小 -->
+		<property name="initialSize" value="15" />
+		<!--连接池最大使用数量 -->
+		<property name="maxActive" value="20" />
+		<!--连接池最小空闲 -->
+		<property name="minIdle" value="0" />
+		<!--配置获取连接等待超时时间 -->
+		<property name="maxWait" value="60000" />
+		<!--配置间隔多久才进行一次检测 ， 检测需要关闭的空闲连接 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<!--配置一个连接在池中最小生存时间 -->
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+		<!--连接空闲时测试是否有效 -->
+		<property name="testWhileIdle" value="false" />
+		<!--获取连接时测试是否有效 -->
+		<property name="testOnBorrow" value="false" />
+		<!--归还连接时测试是否有效 -->
+		<property name="testOnReturn" value="false" />
+		<!--打开PSCache ， 并指定每个连接上PSCache的大小 -->
+		<property name="poolPreparedStatements" value="false" />
+		<property name="maxPoolPreparedStatementPerConnectionSize"
+			value="20" />
+	</bean>
+	
+	<!-- JDBC DataSource E -->
+	
+	<!-- MyBatis S -->
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations" value="file:src/main/webapp/WEB-INF/config/mapper/*.xml" />
+		<property name="typeAliasesPackage" value="com.xinxing.transfer.po" />
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.xinxing.transfer.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+	</bean>
+	
+	<!-- MyBatis E -->
+	
+	<!-- 事务管理 S  -->
+
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<!-- 事务管理 E  -->
+	
+	<!-- component auto -->
+	<context:component-scan base-package="com.xinxing.transfer.service.impl" />
+	
+</beans>

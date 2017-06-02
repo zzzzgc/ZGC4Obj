@@ -1,0 +1,11 @@
+package xinxing.boss.admin.boss.provider.dao;
+
+import org.springframework.stereotype.Repository;
+
+import xinxing.boss.admin.boss.provider.domain.NumberSegment;
+import xinxing.boss.admin.common.persistence.HibernateDao;
+
+@Repository
+public class NumberSegmentDao extends HibernateDao<NumberSegment, String>{
+	
+}

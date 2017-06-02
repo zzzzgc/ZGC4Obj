@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:38:16 GMT+08:00 2017
+http\://xxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact classworlds\:classworlds\:pom\:1.1-alpha-2 from/to public (http\://xxxxx\:8081/nexus/content/groups/public/)\: xxxxx
+@default-public-http\://xxxxx\:8081/nexus/content/groups/public/.lastUpdated=1484209095187
+https\://repo.maven.apache.org/maven2/.lastUpdated=1484209096488
+http\://maven.aliyun.com/nexus/content/groups/public/.lastUpdated=1489646296504

@@ -1,0 +1,15 @@
+#===============================================================
+#   bigboss_cx
+#===============================================================
+bigbosscx_url=http://api.lljypt.com/capi/trade.charge
+bigbosscx_queryUrl=http://api.lljypt.com/capi/query.order
+bigbosscx_merchant=10226
+bigbosscx_clientId=10000
+bigbosscx_key=gFNQGTEAfbUYDQi
+#bigbosscx_merchant=10092
+#bigbosscx_clientId=10060
+#bigbosscx_key=jhrmTlXhlGRPpzH
+#bigbosscx_backUrl=http://112.74.167.182:28083/test_callback.do
+#bigbosscx_backUrl=http://112.74.167.182:28083/bigbosscx_callback.do
+#bigbosscx_backUrl=http://cxapi.sjllb.com/bigbosscx_callback.do
+

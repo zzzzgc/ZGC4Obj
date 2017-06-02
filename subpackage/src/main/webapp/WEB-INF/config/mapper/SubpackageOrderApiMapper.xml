@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xinxing.subpackage.data.dao.SubpackageOrderApiMapper" >
+  <resultMap id="BaseResultMap" type="com.xinxing.subpackage.data.po.SubpackageOrderApi" >
+    <id column="orderId" property="orderid" jdbcType="VARCHAR" />
+    <result column="productInfo" property="productinfo" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="whichPack" property="whichpack" jdbcType="INTEGER" />
+    <result column="packNum" property="packnum" jdbcType="INTEGER" />
+    <result column="feedbackInfo" property="feedbackinfo" jdbcType="VARCHAR" />
+    <result column="feedbackStatus" property="feedbackstatus" jdbcType="INTEGER" />
+    <result column="startTime" property="starttime" jdbcType="TIMESTAMP" />
+    <result column="endTime" property="endtime" jdbcType="TIMESTAMP" />
+    <result column="backTime" property="backtime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    orderId, productInfo, status, phone, whichPack, packNum, feedbackInfo, feedbackStatus, 
+    startTime, endTime, backTime
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderApiExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from subpackage_order_api
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from subpackage_order_api
+    where orderId = #{orderid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from subpackage_order_api
+    where orderId = #{orderid,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderApiExample" >
+    delete from subpackage_order_api
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderApi" >
+    insert into subpackage_order_api (orderId, productInfo, status, 
+      phone, whichPack, packNum, 
+      feedbackInfo, feedbackStatus, startTime, 
+      endTime, backTime)
+    values (#{orderid,jdbcType=VARCHAR}, #{productinfo,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, 
+      #{phone,jdbcType=VARCHAR}, #{whichpack,jdbcType=INTEGER}, #{packnum,jdbcType=INTEGER}, 
+      #{feedbackinfo,jdbcType=VARCHAR}, #{feedbackstatus,jdbcType=INTEGER}, #{starttime,jdbcType=TIMESTAMP}, 
+      #{endtime,jdbcType=TIMESTAMP}, #{backtime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderApi" >
+    insert into subpackage_order_api
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="orderid != null" >
+        orderId,
+      </if>
+      <if test="productinfo != null" >
+        productInfo,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="whichpack != null" >
+        whichPack,
+      </if>
+      <if test="packnum != null" >
+        packNum,
+      </if>
+      <if test="feedbackinfo != null" >
+        feedbackInfo,
+      </if>
+      <if test="feedbackstatus != null" >
+        feedbackStatus,
+      </if>
+      <if test="starttime != null" >
+        startTime,
+      </if>
+      <if test="endtime != null" >
+        endTime,
+      </if>
+      <if test="backtime != null" >
+        backTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="orderid != null" >
+        #{orderid,jdbcType=VARCHAR},
+      </if>
+      <if test="productinfo != null" >
+        #{productinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="whichpack != null" >
+        #{whichpack,jdbcType=INTEGER},
+      </if>
+      <if test="packnum != null" >
+        #{packnum,jdbcType=INTEGER},
+      </if>
+      <if test="feedbackinfo != null" >
+        #{feedbackinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="feedbackstatus != null" >
+        #{feedbackstatus,jdbcType=INTEGER},
+      </if>
+      <if test="starttime != null" >
+        #{starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endtime != null" >
+        #{endtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="backtime != null" >
+        #{backtime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderApiExample" resultType="java.lang.Integer" >
+    select count(*) from subpackage_order_api
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update subpackage_order_api
+    <set >
+      <if test="record.orderid != null" >
+        orderId = #{record.orderid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.productinfo != null" >
+        productInfo = #{record.productinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.status != null" >
+        status = #{record.status,jdbcType=INTEGER},
+      </if>
+      <if test="record.phone != null" >
+        phone = #{record.phone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.whichpack != null" >
+        whichPack = #{record.whichpack,jdbcType=INTEGER},
+      </if>
+      <if test="record.packnum != null" >
+        packNum = #{record.packnum,jdbcType=INTEGER},
+      </if>
+      <if test="record.feedbackinfo != null" >
+        feedbackInfo = #{record.feedbackinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.feedbackstatus != null" >
+        feedbackStatus = #{record.feedbackstatus,jdbcType=INTEGER},
+      </if>
+      <if test="record.starttime != null" >
+        startTime = #{record.starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.endtime != null" >
+        endTime = #{record.endtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.backtime != null" >
+        backTime = #{record.backtime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update subpackage_order_api
+    set orderId = #{record.orderid,jdbcType=VARCHAR},
+      productInfo = #{record.productinfo,jdbcType=VARCHAR},
+      status = #{record.status,jdbcType=INTEGER},
+      phone = #{record.phone,jdbcType=VARCHAR},
+      whichPack = #{record.whichpack,jdbcType=INTEGER},
+      packNum = #{record.packnum,jdbcType=INTEGER},
+      feedbackInfo = #{record.feedbackinfo,jdbcType=VARCHAR},
+      feedbackStatus = #{record.feedbackstatus,jdbcType=INTEGER},
+      startTime = #{record.starttime,jdbcType=TIMESTAMP},
+      endTime = #{record.endtime,jdbcType=TIMESTAMP},
+      backTime = #{record.backtime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderApi" >
+    update subpackage_order_api
+    <set >
+      <if test="productinfo != null" >
+        productInfo = #{productinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="whichpack != null" >
+        whichPack = #{whichpack,jdbcType=INTEGER},
+      </if>
+      <if test="packnum != null" >
+        packNum = #{packnum,jdbcType=INTEGER},
+      </if>
+      <if test="feedbackinfo != null" >
+        feedbackInfo = #{feedbackinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="feedbackstatus != null" >
+        feedbackStatus = #{feedbackstatus,jdbcType=INTEGER},
+      </if>
+      <if test="starttime != null" >
+        startTime = #{starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endtime != null" >
+        endTime = #{endtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="backtime != null" >
+        backTime = #{backtime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where orderId = #{orderid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xinxing.subpackage.data.po.SubpackageOrderApi" >
+    update subpackage_order_api
+    set productInfo = #{productinfo,jdbcType=VARCHAR},
+      status = #{status,jdbcType=INTEGER},
+      phone = #{phone,jdbcType=VARCHAR},
+      whichPack = #{whichpack,jdbcType=INTEGER},
+      packNum = #{packnum,jdbcType=INTEGER},
+      feedbackInfo = #{feedbackinfo,jdbcType=VARCHAR},
+      feedbackStatus = #{feedbackstatus,jdbcType=INTEGER},
+      startTime = #{starttime,jdbcType=TIMESTAMP},
+      endTime = #{endtime,jdbcType=TIMESTAMP},
+      backTime = #{backtime,jdbcType=TIMESTAMP}
+    where orderId = #{orderid,jdbcType=VARCHAR}
+  </update>
+</mapper>

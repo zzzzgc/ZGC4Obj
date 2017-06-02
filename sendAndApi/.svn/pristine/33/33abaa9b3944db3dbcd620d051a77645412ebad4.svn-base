@@ -1,0 +1,9 @@
+#===============================================================
+#   MCHUAN
+#===============================================================
+MCHUAN_sendUrl=http://120.25.135.185:9301/lcll/xml/api.jsp
+MCHUAN_queryUrl=http://120.25.135.185:9301/lcll/xml/api.jsp
+MCHUAN_userId=10294
+MCHUAN_password=dc662c5f792fc8522a84ba86d4d959fb
+#MCHUAN_callback=http://112.74.48.39:8080/zerogou/MCHUAN_callback.do
+MCHUAN_callback=http://112.74.167.182:28083/MCHUAN_callback.do

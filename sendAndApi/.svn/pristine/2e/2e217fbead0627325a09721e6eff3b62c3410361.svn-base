@@ -1,0 +1,150 @@
+package com.xinxing.o.boss.business.provider.other.hquan.util;
+
+import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.junit.Test;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.o.boss.business.provider.other.hquan.util.RSAUtil.RSADTO;
+import com.xinxing.o.boss.common.encry.MD5_HexUtil;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.time.TimeUtils;
+
+public class HquanUtils {
+	private static Logger log = Logger.getLogger(HquanUtils.class);
+
+	public static String getSendStr(SendOrderInfo sendOrderInfo){
+		Map<String,Object> map = new HashMap<>();
+		String ourOrderId = sendOrderInfo.getOrderId();
+		String phone = sendOrderInfo.getPhone();
+		String supplierCode = sendOrderInfo.getSupplierCode(); // "nation,30"
+		String[] split = supplierCode.split(",");
+		
+		//上游所需数据
+		String appId = Constants.getString("hquan_appid"); 		    //商户ID
+		String customerOrderId = ourOrderId; //客户订单号(小于等于32位)
+		String phoneNo = phone; 		     //手机号
+		String spec = split[1]; 			 //流量规格(30M传30，1G传1024)
+		String scope = split[0];			 //使用范围(全国漫游:nation, 省内漫游:province)
+		String callbackUrl = Constants.getString("hquan_callback");	//回调地址 提示：拼接源串进行签名时不要做URLEncode编码，传参时可以做URLEncode编码。
+		String timeStamp = TimeUtils.getSSSNowTimeFormate();  //时间戳, 格式yyyyMMddHHmmssSSS
+		
+		map.put("appId",appId);
+		map.put("customerOrderId",customerOrderId);
+		map.put("phoneNo",phoneNo);
+		map.put("spec",spec);
+		map.put("scope",scope);
+		map.put("callbackUrl",callbackUrl);
+		map.put("timeStamp",timeStamp);
+		String sign = getSign(map);
+		map.put("signature",sign);
+		return HttpUtils.getStrByMapOrderByABC(map);
+		
+	}
+	
+	public static String getQueryStr(SendOrderInfo sendOrderInfo){
+		Map<String,Object> map = new HashMap<>();
+		String ourOrderId = sendOrderInfo.getOrderId();
+		//上游所需数据
+		String appId = Constants.getString("hquan_appid"); 		    //商户ID
+		String customerOrderId = ourOrderId; 		//客户订单号(小于等于32位)
+		String timeStamp = TimeUtils.getSSSNowTimeFormate();  //时间戳, 格式yyyyMMddHHmmssSSS
+		
+		map.put("appId",appId);
+		map.put("customerOrderId",customerOrderId);
+		map.put("timeStamp",timeStamp);
+		String sign = getSign(map);
+		map.put("signature",sign);
+		
+		return HttpUtils.getStrByMapOrderByABC(map);
+	}
+	
+	/* */
+	public static String getSign(Map<String,Object> map){
+		
+		//生成字典排序 A=a&B=b
+		Set<String> keys = map.keySet();
+		List<String> list = new ArrayList<String>(keys);
+		Collections.sort(list);
+		
+		StringBuilder sb = new StringBuilder();
+		for (String key : list) {
+			sb.append(key+"="+map.get(key)+"&");
+		}
+		String oldStr = sb.toString();
+		String newStr = oldStr.substring(0,oldStr.length()-1);
+		String sign = "";
+		//按照文档的加密方法进行加密
+		try {
+			String privateKey = Constants.getString("hquan_key");
+			sign = RSAUtil.encodeStringPrivate(MD5_HexUtil.md5Hex(newStr).getBytes(), RSAUtil.getPrivateKey(privateKey));
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		return sign ;
+	}
+	
+	/**
+	 * 获取结果码信息
+	 * @param codes
+	 * @return
+	 */
+	public static String getErrorMsg(String code){
+		Map<String,String> map = new HashMap<>();
+		map.put("0","请求成功");
+		map.put("1","参数异常");
+		map.put("2","内部异常");
+		map.put("3","签名校验失败");
+		map.put("4","可用资金不足");
+		map.put("5","查询订单信息无数据");
+		map.put("6","无效的商户ID");
+		map.put("7","无账户余额记录");
+		map.put("8","未找到该日期账户的余额查询记录");
+		map.put("9","商户订单号重复");
+		map.put("10","该代理商没有支持该运营商的规格列表");
+		return map.get(code)==null?"":map.get(code);
+	}
+	@Test
+	public void testName() throws Exception {
+		String teString = "#￥%testTjm露西";
+		System.out.println(URLEncoder.encode(teString));
+		System.out.println(TimeUtils.getSSSNowTimeFormate());
+		String test = "		{" 
+					    +"    'code': 0, 										"
+					    +"    'desc': 'success', 								"
+					    +"    'data': {											"
+						+"	        'orderId': '128',							" 
+						+"	        'customerOrderId': '201702101420303000001', " 
+						+"	        'phoneNo': '18513941330',				    "
+						+"	        'spec': 10, 								"
+						+"	        'province': '北京市',							" 
+						+"	        'scope': 'nation', 							"
+						+"	        'mo': 'ChinaNet', 							"
+						+"	        'callbackUrl': 'http://127.0.0.1/callback', " 
+						+"	        'officialPrice': 300, 						"
+						+"	        'actualPrice': 240, 						"
+						+"	        'discount': 0.8, 							"
+						+"	        'createdTime': '2017-02-10 15:33:19',		" 
+						+"	        'status': 'success', 						"
+						+"	        'updateTime': '2017-02-10 15:25:00'			"
+						+"         }											"
+					    +"	} ";
+		JSONObject obj = JSON.parseObject(test);
+		String string = obj.getString("desc");
+		String string2 = obj.getJSONObject("data").getString("callbackUrl");
+		System.out.println(string);	
+		System.out.println("\u6ca1\u6709\u8be5\u8ba2\u5355\u53f7");
+	}
+
+}

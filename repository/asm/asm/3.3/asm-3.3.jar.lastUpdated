@@ -1,0 +1,5 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Wed May 17 16:45:50 GMT+08:00 2017
+@default-central-https\://repo.maven.apache.org/maven2/.lastUpdated=1488522414302
+http\://maven.aliyun.com/nexus/content/groups/public/.lastUpdated=1495010750775
+https\://repo.maven.apache.org/maven2/.error=Could not transfer artifact asm\:asm\:jar\:3.3 from/to central (https\://repo.maven.apache.org/maven2)\: The operation was cancelled.

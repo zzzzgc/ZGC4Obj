@@ -1,0 +1,166 @@
+package com.xinxing.o.boss.business.provider.other.qgdx.util;
+
+import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.junit.Test;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.o.boss.common.encry.MD5_HexUtil;
+import com.xinxing.o.boss.common.json.JsonUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.time.TimeUtils;
+
+public class QGDXUtils {
+	
+	public static String getSendStr(SendOrderInfo sendOrderInfo) throws Exception{
+		Map<String,Object> map = new HashMap<>();
+		String phone = sendOrderInfo.getPhone();
+		String ourOrderId = sendOrderInfo.getOrderId();
+		String supplierCode = sendOrderInfo.getSupplierCode();   //可输入对方提供的 充值产品编码
+		//提供给上游字段
+		String accountVal = phone;			  		 //手机号码
+		int merchant = Integer.parseInt(Constants.getString("qgdx_merchant"));  //商户号
+		int clientId = Integer.parseInt(Constants.getString("qgdx_clientId"));  //服务接口编号 
+		int product = Integer.parseInt(supplierCode);//充值产品编码
+		String outTradeNo = ourOrderId; 	  		 //商户本地订单号
+		String version = "V100";   	    	  		 //固定值
+        long ts = System.currentTimeMillis();  		 //时间戳
+        
+        map.put("accountVal",accountVal);
+		map.put("merchant",merchant);
+		map.put("clientId",clientId);
+		map.put("product",product);
+		map.put("outTradeNo", outTradeNo);
+		map.put("version",version);	
+		map.put("ts",ts);
+		
+		String sign = getSign(map);
+		map.put("sign",sign);
+		return JsonUtils.obj2Json(map);
+	}
+	
+	public static String getQueryStr(SendOrderInfo sendOrderInfo) throws UnsupportedEncodingException{
+		Map<String,Object> map = new HashMap<>();
+		String ourOrderId = sendOrderInfo.getOrderId();
+		//提供给上游字段
+		int merchant = Integer.parseInt(Constants.getString("qgdx_merchant"));  //商户号
+		int clientId = Integer.parseInt(Constants.getString("qgdx_clientId"));  //服务接口编号  
+		String outTradeNo = ourOrderId; 	  //商户本地订单号
+		String version = "V100";   	    	  //固定值
+        long ts = System.currentTimeMillis(); //时间戳
+        
+		map.put("merchant",merchant);
+		map.put("clientId",clientId);
+		map.put("outTradeNo", outTradeNo);
+		map.put("version",version);	
+		map.put("ts",ts);
+		
+		String sign = getSign(map);
+		map.put("sign",sign);
+		return JsonUtils.obj2Json(map);
+	}
+
+	public static String getSign(Map<String,Object> map) throws UnsupportedEncodingException{
+		String qgdx_key = Constants.getString("qgdx_key");
+		StringBuilder sb = new StringBuilder();
+		
+		Set<String> keys = map.keySet();
+		List<String> list = new ArrayList<>(keys);
+		Collections.sort(list);
+		for (String key : list) {
+			sb.append(key+map.get(key));
+		}
+		sb.append(qgdx_key);
+		String newStr = new String(sb.toString().getBytes(),"utf-8"); //将明文按 utf-8 取字节序列
+		return MD5_HexUtil.md5Hex(newStr);
+	}
+	/**
+	 * 获取结果码信息
+	 * @param codes
+	 * @return
+	 */
+	public static String getErrorMsg(String code){
+		Map<String,String> map = new HashMap<>();
+		map.put("1000","验签不正确");
+		map.put("1001","时间戳相差过大");
+		map.put("1002","充值产品代码错误");
+		map.put("1003","请求参数的商户号或者接口服务号错误");
+		map.put("1004","系统充值繁忙");
+		map.put("1005","充值请求IP非法");
+		map.put("1006","手机号段错误，联系管理员添加号段信息");
+		map.put("1007","请求版本号错误");
+		map.put("1008","流水号重复/流水号超过最大位数s");
+		map.put("1009","余额不足");
+		map.put("1010","订单不存在");
+		return map.get(code)==null?"":map.get(code);
+    }
+	
+	/**  Md5 验证 sign
+	 * @author tjm
+	 * @param map
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	public static boolean checkoutMD5(Map<String,String> map) throws UnsupportedEncodingException{
+		String qgdx_key = Constants.getString("qgdx_key");
+		StringBuilder sb = new StringBuilder();
+
+		if ("".equals(map.get("failReason")) || map.get("failReason") == null) {
+			map.remove("failReason");
+		}
+		Map<String,String> signMap = new HashMap<>();
+		signMap.put("sign",map.get("sign"));
+		map.remove("sign");
+		
+		Set<String> keys = map.keySet();
+		List<String> list = new ArrayList<>(keys);
+		Collections.sort(list);
+		for (String key : list) {
+			sb.append(key+map.get(key));
+		}
+		sb.append(qgdx_key);
+		String newStr = new String(sb.toString().getBytes(),"utf-8");
+		String newMd5 = MD5_HexUtil.md5Hex(newStr);
+		if (newMd5.equals(signMap.get("sign"))) {
+			return true;
+		}
+		return false;
+	}
+	
+	@Test
+	public void testName() throws Exception {
+		//对方真实返回的信息
+		String test = "{\"failReason\":\"充值失败\","
+					 + "\"outTradeNo\":\"170410B0B153675\","
+					 + "\"sign\":\"f5da9000e6fecabd2f65787c03e20a57\","
+					 + "\"status\":5,"
+					 + "\"ts\":1491817624565}";
+		JSONObject obj = JSON.parseObject(test);
+		String ts = obj.getString("ts");
+		String sign = obj.getString("sign");
+		String status = obj.getString("status");
+		String failReason = obj.getString("failReason");
+		String ourOrderId = obj.getString("outTradeNo");
+		Map<String,String> map = new HashMap<>();
+		map.put("ts",ts);
+		map.put("sign",sign);
+		map.put("status",status);
+		map.put("failReason",failReason);
+		map.put("outTradeNo",ourOrderId);
+		boolean mark = checkoutMD5(map);
+		System.out.println(mark);
+		
+	}
+}

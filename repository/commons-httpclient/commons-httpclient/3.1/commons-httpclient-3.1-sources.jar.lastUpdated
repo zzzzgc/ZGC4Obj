@@ -1,0 +1,5 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Tue Mar 14 13:06:25 GMT+08:00 2017
+@default-public-http\://192.168.1.116\:8081/nexus/content/groups/public/.lastUpdated=1489467945504
+https\://repo.maven.apache.org/maven2/.lastUpdated=1489467985171
+http\://192.168.1.116\:8081/nexus/content/groups/public/.error=Could not transfer artifact commons-httpclient\:commons-httpclient\:jar\:sources\:3.1 from/to public (http\://192.168.1.116\:8081/nexus/content/groups/public/)\: connect timed out

@@ -1,0 +1,14 @@
+#===============================================================
+#   Testsdlt
+#===============================================================
+testsdlt1_sendUrl=http://api.miliuliang.cn:11140/gprsChongzhiAdvance.do
+testsdlt1_queryUrl=http://api.miliuliang.cn:11140/query_jkorders.do
+testsdlt1_userid=18820036966
+testsdlt1_pwd=716B2845514A9B3723201E3B07B072D9
+testsdlt1_key=FAC0725D302BB004CBCC1F12FE13C2BE
+#testsdlt_backUrl=http://xxxx/test_callback.do
+
+#testbackUrl
+testsdlt1_backUrl=http://112.74.48.39:8080/zerogou/testsdlt1_callback.do
+#testsdlt_backUrl=http://xxxx/testsdlt_callback.do
+

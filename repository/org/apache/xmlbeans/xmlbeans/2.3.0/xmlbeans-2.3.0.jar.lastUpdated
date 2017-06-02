@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:39:01 GMT+08:00 2017
+http\://xxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact org.apache.xmlbeans\:xmlbeans\:jar\:2.3.0 from/to public (http\://xxxxx\:8081/nexus/content/groups/public/)\: xxxxx
+@default-public-http\://xxxxx\:8081/nexus/content/groups/public/.lastUpdated=1484300445127
+https\://repo.maven.apache.org/maven2/.lastUpdated=1484301419623
+http\://maven.aliyun.com/nexus/content/groups/public/.lastUpdated=1489646341535

@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:39:38 GMT+08:00 2017
+maven-war-plugin-2.4.pom>nexus=
+maven-war-plugin-2.4.jar>nexus=
+maven-war-plugin-2.4.pom>central=
+maven-war-plugin-2.4.jar>central=

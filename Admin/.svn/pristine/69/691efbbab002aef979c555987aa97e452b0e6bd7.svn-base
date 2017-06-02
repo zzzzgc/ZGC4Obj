@@ -1,0 +1,52 @@
+
+#mysql database setting
+#jdbc.driver=com.mysql.jdbc.Driver
+#jdbc.url=jdbc\:mysql\://127.0.0.1\:3306/boss?useUnicode\=true&characterEncoding\=utf-8
+#jdbc.username=hyboss
+#jdbc.password=6Dh4Mupf
+
+#mysql database setting
+#jdbc.driver=com.mysql.jdbc.Driver
+#jdbc.url=jdbc:mysql://127.0.0.1/xinxinboss?useUnicode=true&characterEncoding=UTF-8
+#jdbc.username=root
+#jdbc.password=abcd1234
+
+#mysql database setting
+jdbc.driver=com.mysql.jdbc.Driver
+jdbc.url=jdbc\:mysql\://127.0.0.1\:3306/boss?useUnicode\=true&characterEncoding\=utf-8
+jdbc.username=root
+jdbc.password=abcd1234
+
+
+#connection pool settings
+jdbc.pool.maxIdle=5
+jdbc.pool.maxActive=40
+
+#hibernate settings
+hibernate.show_sql=true
+hibernate.format_sql=false
+hibernate.dialect=org.hibernate.dialect.MySQLDialect
+hibernate.search.default.indexBase=indexes
+
+#cache settings
+hibernate.ehcache.configFile=../config/cache/ehcache-hibernate-local.xml
+ehcache.configFile=../config/cache/ehcache-local.xml
+
+#admin path
+adminPath=/a
+
+frontPath=/f
+
+#encode
+isEncodeDebug=fasle
+filterSearchTime=true
+
+#test cmd  
+bossFreshUrl_send=http://localhost:8080/XinXingBoss/req.do?cmd=flushcache
+bossFreshUrl_api=http://localhost:8080/XinXingBoss/req.do?cmd=flushcache
+#bossReqUrl=http://localhost:8080/XinXingBoss/call.do?cmd=Hand
+bossReqUrl=http://localhost:8080/XinXingBoss/req.do?cmd=cusapi
+bossManualUrl=http://localhost:8080/XinXingBoss/req.do?cmd=manualapi
+
+sys_boss_name=huayi
+#setting_projectName=\u534E\u5C79

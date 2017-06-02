@@ -1,0 +1,7 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:38:00 GMT+08:00 2017
+jsoup-1.8.3.jar>nexus=
+jsoup-1.8.3-javadoc.jar>public=
+jsoup-1.8.3.jar>central=
+jsoup-1.8.3.pom>central=
+jsoup-1.8.3.pom>nexus=

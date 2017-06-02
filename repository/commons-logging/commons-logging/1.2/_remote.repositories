@@ -1,0 +1,6 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Mar 16 14:38:56 GMT+08:00 2017
+commons-logging-1.2.pom>nexus=
+commons-logging-1.2.jar>nexus=
+commons-logging-1.2.jar>central=
+commons-logging-1.2.pom>central=

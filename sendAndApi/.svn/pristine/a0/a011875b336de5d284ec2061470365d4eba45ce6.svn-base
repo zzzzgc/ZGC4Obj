@@ -1,0 +1,145 @@
+package com.xinxing.o.boss.message;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.xinxing.boss.business.message.MessageService;
+import com.xinxing.boss.interaction.pojo.customer.CustomerInfo;
+import com.xinxing.boss.interaction.pojo.provider.ProviderProductInfo;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+public class MessageServiceImpl implements MessageService {
+
+	private static final Logger log = Logger.getLogger(MessageServiceImpl.class);
+	
+	@Autowired
+	private com.xinxing.boss.interaction.service.customer.a flowCustomerService;
+	@Autowired
+	private com.xinxing.boss.interaction.service.provider.a flowProviderService;
+	/**充值成功后发送短信信息
+	 * @param phone 手机号
+	 * @param opeartor 运营商
+	 * @param size 流量大小
+	 * @param area 区域 0本省 1全国
+	 */
+	@Override
+	public void sendSuccessMsg(String phone, String opeartor, String size, int area) {
+	}
+	/**
+	 * 对采购商发短信
+	 * 请求
+	 * {"id" : 1, "method" : "send", "params" : { "userid" : "200001","password " : "123456",
+        "submit" : [ {
+            "content " : "验证码为1234。【签名】",
+            "phone " : "13800000000,13600000xxx"
+        },{
+            "content " : "验证码为1235。【签名】",
+            "phone " : "13800000001"
+        }]       }     }	
+		返回
+		{    "id" : 1,    "result" : [{
+        "info" : "成功",
+        "msgid" : "4495599595170205200",
+        "phone" : "13800000000",
+        "return" : "0"
+    }]}
+	 * @param customerId
+	 * @param phone
+	 * @param operator
+	 * @param size
+	 * @param area
+	 */
+	@Override
+	public void sendSuccessCustomerMsg(int customerId, int productId, String phone,
+			String operator, String size, int area){
+		log.info("进入发送短信>>E" + productId);
+		String userid = Constants.getString("sms_userid").trim();
+		String password = Constants.getString("sms_password").trim();
+		String content = Constants.getString("sms_content").trim();
+		String sms_validityTime = Constants.getString("sms_validityTime").trim();
+		String sendUrl = Constants.getString("sms_sendUrl").trim();
+		// 获取 ProviderProductInfo
+		ProviderProductInfo info = flowProviderService.q(productId);
+		String validityTime = info.getValidityTime();
+		validityTime = StringUtils.isNotBlank(validityTime) ? validityTime : sms_validityTime ;
+		content = content.replace("{phone}", phone).replace("{size}", size).replace("{area}",
+						 area == 0 ? "省内" : "全国").replace("{validityTime}", validityTime);
+		String jsonParam = "{\"id\":" + customerId + ",\"method\":\"send\",\"params\":{\"userid\":\"" + userid
+							+ "\"," + "\"password\":\"" + password + "\",\"submit\":[{\"content\":\"" + content + "\","
+							+ "\"phone\":\"" + phone + "\"}]}}";
+		CustomerInfo customer = flowCustomerService.i(customerId);
+		log.info("发送短信>>E" + productId + " >>" + jsonParam);
+		try {
+			jsonParam = URLEncoder.encode(jsonParam, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			log.error("URLEncoder异常--" + e);
+		}
+		if(customer.getIsSendMsg() == 1) {
+			String respResult = HttpUtils.sendPost(sendUrl, jsonParam);
+			//验证不成功{"error":{"code":状态码,"message":"描述"},"id":1}
+			JSONObject jsonObject = JSONObject.parseObject(respResult);
+			JSONArray resultArr = jsonObject.getJSONArray("result");
+			if(resultArr != null) {
+				jsonObject = JSONObject.parseObject(resultArr.get(0).toString());
+				log.info("短信发送结果: " + jsonObject.get("return") + " " + jsonObject.get("info"));
+			}
+			String errorJson = jsonObject.getString("error");
+			if(errorJson != null) {
+				jsonObject = JSONObject.parseObject(errorJson);
+				String code = jsonObject.getString("code");
+				String message = jsonObject.getString("message");
+				log.info("短信发送结果: " + code + message);
+			}
+		}
+	}
+
+	/*public static void main(String args[]) {
+		String userid = Constants.testgetString("sms_userid");
+		String password = Constants.testgetString("sms_password");
+		String sendUrl = Constants.testgetString("sms_sendUrl");
+		String content = Constants.testgetString("sms_content").trim();
+		String sms_validityTime = Constants.testgetString("sms_validityTime").trim();
+		String sms_productId = null;
+		try {
+			sms_productId = Constants.testgetString("sms_productId_" + 13456).trim();
+			sms_productId = StringUtils.isNotBlank(sms_productId) ? sms_productId : "0";
+			if (Integer.valueOf(sms_productId) == 13456) {
+				content = Constants.testgetString("sms_content_" + 13456).trim();
+			}
+		} catch (Exception e) {
+		}
+		int area = 1;
+		String phone = "2345";
+		content = content.replace("{phone}", phone).replace("{size}", "1M").replace("{area}",
+				 area == 0 ? "省内" : "全国").replace("{validityTime}", sms_validityTime);
+		String jsonParam = "{\"id\":10427291,\"method\":\"send\",\"params\":{\"userid\":\"" + userid + "\","
+					+ "\"password\":\"" + password + "\",\"submit\":[{\"content\":\"" 
+					+ content + "\"," + "\"phone\":\"" + phone + "\"}]}}";
+		System.out.println(jsonParam);
+		//System.out.println(HttpUtils.sendPost(sendUrl, jsonParam));
+		String respResult = "{\"id\":"+Integer.MAX_VALUE+",\"result\":[{\"info\":\"成功\",\"msgid\":\"4495599595170205200\","
+				+ "\"phone\":\"13800000000\",\"return\":\"0\"}]}";
+		String respResult = "{\"error\":{\"code\":1001002,\"message\":\"余额不足\"},\"id\":1}";
+		JSONObject jsonObject = JSONObject.parseObject(respResult);
+		JSONArray jsonArray = jsonObject.getJSONArray("result");
+		//jsonArray = (JSONArray) (jsonArray == null ? "": jsonArray);
+		//JSONArray resultArr = JSON.parse(jsonArray.toString());
+		if(jsonArray != null) {
+			jsonObject = JSONObject.parseObject(jsonArray.get(0).toString());
+			System.out.println(jsonObject.get("return") + " " + jsonObject.get("info") );
+		}
+		String errorJson = jsonObject.getString("error");
+		if(errorJson != null) {
+			jsonObject = JSONObject.parseObject(errorJson);
+			String code = jsonObject.getString("code");
+			String message = jsonObject.getString("message");
+			System.out.println("短信发送结果: " + code + message);
+		}
+	}*/
+}

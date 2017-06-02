@@ -1,0 +1,19 @@
+#===============================================================
+#   qws_test
+#===============================================================
+qws_sendUrl_flow=http://114.55.111.129/flux/httpOrderByPackage.action
+qws_sendUrl_product=http://114.55.111.129/flux/httpOrder.action
+qws_queryUrl=http://114.55.111.129/flux/httpQueryStatus.action
+qws_enterpriseCode=E100346
+qws_password=cef9f688-8074-49e1-b9e5-229ad2fab5e4
+qws_sendBack=http://106.14.18.108:28083/qws_callback.do
+#===============================================================
+#   qws_zhengshi
+#===============================================================
+#qws_sendUrl_flow=http://114.55.111.129/flux/httpOrderByPackage.action
+#qws_sendUrl_product=http://114.55.111.129/flux/httpOrder.action
+#qws_queryUrl=http://114.55.111.129/flux/httpQueryStatus.action
+#qws_enterpriseCode=E100346
+#qws_password=cef9f688-8074-49e1-b9e5-229ad2fab5e4
+#qws_sendBack=http://send.zerogou.com/qws_callback.do
+#===============================================================

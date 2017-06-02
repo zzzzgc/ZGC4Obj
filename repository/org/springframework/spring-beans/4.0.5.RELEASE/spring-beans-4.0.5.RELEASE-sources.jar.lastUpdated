@@ -1,0 +1,5 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Feb 09 18:02:12 GMT+08:00 2017
+https\://repo.maven.apache.org/maven2/.lastUpdated=1486634532715
+@default-public-http\://xxxxxxx\:8081/nexus/content/groups/public/.lastUpdated=1486634518894
+http\://xxxxxxx\:8081/nexus/content/groups/public/.error=Could not transfer artifact org.springframework\:spring-beans\:jar\:sources\:4.0.5.RELEASE from/to public (http\://xxxxxxx\:8081/nexus/content/groups/public/)\: xxxxxxx

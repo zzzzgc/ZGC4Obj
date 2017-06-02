@@ -1,0 +1,15 @@
+#===============================================================
+#  FB test
+#===============================================================
+#fb_SignKey=A3S5D4F
+#fb_sendUrl=http://106.14.18.108:28085/api/a/send.do
+#fb_queryUrl=http://106.14.18.108:28085/api/a/query.do
+#fb_callbackUrl=http://106.14.18.108:28085/fzgcallback.do
+
+#===============================================================
+#  FB local
+#===============================================================
+fb_SignKey=A3S5D4F
+fb_sendUrl=http://127.0.0.1:8080/subpackage/api/a/send.do
+fb_queryUrl=http://127.0.0.1:8080/subpackage/api/a/query.do
+fb_callbackUrl=http://127.0.0.1:8080/subpackage/fzgcallback.do

@@ -1,0 +1,14 @@
+#===============================================================
+#   Testsdlt
+#===============================================================
+tjm_sendUrl=
+tjm_queryUrl=http://...../query_jkorders.do
+tjm_userid=18820036966
+tjm_pwd=716B2845514A9B3723201E3B07B072D9
+tjm_key=FAC0725D302BB004CBCC1F12FE13C2BE
+#tjm_backUrl=http://xxxx/test_callback.do
+
+#testbackUrl
+
+#tjm_backUrl=http://xxxx/tjm_callback.do
+

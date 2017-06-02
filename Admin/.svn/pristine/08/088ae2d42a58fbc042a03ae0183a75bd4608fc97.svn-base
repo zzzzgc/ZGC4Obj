@@ -1,0 +1,178 @@
+package xinxing.boss.admin.boss.other.cmd;
+
+
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import xinxing.boss.admin.boss.customer.domain.CustomerInfo;
+import xinxing.boss.admin.boss.order.cmd.OrderInfoCmd;
+import xinxing.boss.admin.boss.order.domain.OrderInfo;
+import xinxing.boss.admin.boss.order.util.OrderUtils;
+import xinxing.boss.admin.boss.other.domain.BossScheduleChange;
+import xinxing.boss.admin.boss.other.domain.TransferOrder;
+import xinxing.boss.admin.boss.other.service.TransferOrderService;
+import xinxing.boss.admin.boss.provider.domain.ProductCategoryInfo;
+import xinxing.boss.admin.boss.provider.domain.ProviderInfo;
+import xinxing.boss.admin.common.excel.ExcelUtils;
+import xinxing.boss.admin.common.persistence.Page;
+import xinxing.boss.admin.common.persistence.PropertyFilter;
+import xinxing.boss.admin.common.utils.base.BaseUtil;
+import xinxing.boss.admin.common.utils.http.HttpUtils;
+import xinxing.boss.admin.common.utils.parameter.ParameterListener;
+import xinxing.boss.admin.common.utils.string.StringUtils;
+import xinxing.boss.admin.common.utils.time.DateUtils;
+import xinxing.boss.admin.common.web.BaseController;
+
+@Controller
+@RequestMapping(value = "boss/transferOrder")
+public class TransferOrderCmd extends BaseController{
+	private static Logger log = LoggerFactory.getLogger(TransferOrderCmd.class);
+	@Autowired
+	private TransferOrderService transferOrderService;
+	
+	/**
+	 * 默认页面
+	 */
+	@RequestMapping(value = "list", method = RequestMethod.GET)
+	public String list(HttpServletRequest req, TransferOrder transferOrder) {
+		Map<String, String> reqMap = HttpUtils.getReqParams(req);
+		if (reqMap == null) {
+			reqMap = new HashMap<String, String>();
+		}
+		String page = reqMap.get("page");
+		if (StringUtils.isEmpty(page)) {
+			page = "List";
+		}
+		reqMap.put("todayStart", DateUtils.getDate() + " 00:00:00");
+		reqMap.put("todayEnd", DateUtils.getDate() + " 23:59:59");
+		req.setAttribute("reqMap", reqMap);
+		return "boss/transferOrderInfo/transferOrderInfo" + page;
+	}
+	
+	
+	/**
+	 * 获取所有订单信息
+	 * 
+	 * @return
+	 * @throws ParseException
+	 */
+	@RequestMapping(value = "transferOrderList")
+	@ResponseBody
+	public Map<String, Object> getConfigList(HttpServletRequest request) throws ParseException {
+		Map<String, Object> map = new HashMap<String, Object>();
+		try {
+			Page<TransferOrder> page = getPage(request);
+			List<PropertyFilter> filters = PropertyFilter.buildFromHttpRequest(request);
+			//BaseUtil.testSearch(filters, "receiveTime");
+			page = transferOrderService.search(page, filters);
+			List<TransferOrder> result = page.getResult();
+
+			map.put("rows", page.getResult());
+			map.put("total", page.getTotalCount());
+			System.out.println("总条数---："+map.get("total"));
+		} catch (Exception e) {
+			log.info(e.getMessage(), e);
+		}
+		return map;
+	}
+	
+	/**
+	 * 订单统计
+	 * 
+	 * @return
+	 */
+	@RequestMapping(value = "getCountInfo")
+	@ResponseBody
+	public Map<String, Object> getCountInfo(HttpServletRequest request) {
+		/*List<PropertyFilter> filters = PropertyFilter.buildFromHttpRequest(request);
+		Map<String, Object> map = new HashMap<>();
+		try {
+			map = OrderUtils.getCountMap(orderInfoService, filters, "boss_order");
+		} catch (Exception e) {
+			map.put("failReason", "统计异常");
+		}
+		return map;*/
+		return null;
+	}
+	
+	/**
+	 * 导出excel
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping("exportExcel")
+	public void createExcel(HttpServletRequest req, HttpServletResponse resp) throws Exception, InterruptedException {
+		Integer maxNumber = 1000000;
+		Page<TransferOrder> page = getPage(req);
+		page.setPageNo(1);
+		page.setPageSize(maxNumber);
+		List<PropertyFilter> filters = PropertyFilter.buildFromHttpRequest(req);
+		page = transferOrderService.exportSearch(page, filters, maxNumber);
+		if (page.getTotalCount() > maxNumber) {
+			ExcelUtils.writeErrorMsg(resp, page.getTotalCount(), "导出数据不能超过100万条");
+			return;
+		}
+		List<TransferOrder> list = page.getResult();// 获取数据
+		List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
+		for (TransferOrder transferOrder : list) {
+			Map<String, Object> beanToMap = ExcelUtils.beanToMap(transferOrder);
+			ExcelUtils.showValue(beanToMap, "status","异常","成功","失败","等待");
+			changTimeFormat(beanToMap, "callbackTime");
+			changTimeFormat(beanToMap, "startTime");
+			changTimeFormat(beanToMap, "endTime");
+			changeValue(beanToMap,"typeFlow","移动","联通","电信","省内","全国");
+			mapList.add(beanToMap);
+		}
+		String title = "中转平台订单信息";
+
+		String[] hearders = new String[] { "供货商订单号", "采购商订单号", "电话号码",
+				"订单状态", "采购商产品名称", "回调地址","回调数据", 
+				"回调结束时间","开始充值时间","充值结束时间 "};
+		String[] fields = new String[] { "downId", "supplierId", "phone",
+				"status", "typeFlow", "callbackAddress","callbackData",
+				"callbackTime", "startTime","endTime"};
+		ExcelUtils.productExcel(resp, mapList, title, hearders, fields, log);
+	}
+
+	/* 针对中转平台的流量类型进行转换
+	 * 如把    "10,全国,0,YD" 转为   “全国移动10M省内包”
+	 */
+	public static void changeValue(Map<String,Object> beanToMap,String name,String... values){
+		String flowType = (String) beanToMap.get(name);
+		if (flowType != null) {
+			String[] split = flowType.split(",");
+			String operator = "YD".equals(split[3])?values[0]:("LT".equals(split[3])?values[1]:values[2]);
+			String area = "0".equals(split[2]) ?values[3]:values[4];
+			beanToMap.put(name, split[1]+operator+split[0]+"M"+area+"包"); 
+		}
+	}
+	/*把导出的时间格式化一下
+	 * 2017-05-16 18:41:18.0   变为   2017-05-16 18:41:18
+	 */
+	public static void changTimeFormat(Map<String,Object> beanToMap,String name){
+		String time = (String) beanToMap.get(name);
+		if (time != null) {
+			beanToMap.put(name,time.substring(0, 19));
+		}
+	}
+	
+	
+}

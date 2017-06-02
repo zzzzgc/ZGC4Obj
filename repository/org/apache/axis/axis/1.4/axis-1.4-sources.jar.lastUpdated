@@ -1,0 +1,5 @@
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Tue Mar 14 13:40:57 GMT+08:00 2017
+@default-public-http\://192.168.1.116\:8081/nexus/content/groups/public/.lastUpdated=1489470033979
+https\://repo.maven.apache.org/maven2/.lastUpdated=1489470057115
+http\://192.168.1.116\:8081/nexus/content/groups/public/.error=Could not transfer artifact org.apache.axis\:axis\:jar\:sources\:1.4 from/to public (http\://192.168.1.116\:8081/nexus/content/groups/public/)\: connect timed out

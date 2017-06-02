@@ -1,0 +1,152 @@
+package com.xinxing.o.boss.business.provider.other.mchuan.api;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.o.boss.business.provider.api.supplier.api.SendApi;
+import com.xinxing.o.boss.business.provider.other.mchuan.utils.MCHUANUtils;
+import com.xinxing.o.boss.common.http.HttpUtils;
+import com.xinxing.o.boss.common.resource.Constants;
+import com.xinxing.o.boss.common.util.CommonUtils;
+import com.xinxing.o.boss.common.util.FlowQueryLogUtils;
+import com.xinxing.o.boss.common.util.FlowSendLogUtils;
+import com.xinxing.o.boss.common.xml.XmlUtils;
+
+public class MCHUANSendApiImpl implements SendApi {
+	private static Logger log = Logger.getLogger(MCHUANSendApiImpl.class);
+	public static Boolean isOurId = true;
+
+	@Override
+	public SendOrderResult send(SendOrderInfo sendOrderInfo) {
+		SendOrderResult result = null;
+		String order_orderId = sendOrderInfo.getOrderId();// aa订单
+		String providerOrderId = isOurId ? order_orderId : null;
+		try {
+			String sendReq = MCHUANUtils.getSendReq(sendOrderInfo);
+			String sendUrl = Constants.getString("MCHUAN_sendUrl").trim();
+
+			// 提交订单
+			FlowSendLogUtils.sendReqLog(log, order_orderId, sendReq);
+			String sendRes = HttpUtils.sendPostEncode(sendUrl, sendReq,"utf-8");
+			FlowSendLogUtils.sendResLog(log, order_orderId, sendRes);
+
+			if (StringUtils.isNotBlank(sendRes)) {
+				// 获取所有的属性
+				NamedNodeMap attributes = XmlUtils.getXmlNoteList(sendRes, "root").item(0).getAttributes();
+
+				String code = attributes.getNamedItem("return").getNodeValue();
+				String msg = attributes.getNamedItem("info").getNodeValue();
+				switch (code) {
+				case "0":
+					// 提交成功
+					String supplier_id = attributes.getNamedItem("taskid").getNodeValue();
+					providerOrderId = supplier_id;
+					result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status, null, providerOrderId);
+					break;
+				case "1001002": //余额不足转人工
+					result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, msg, providerOrderId);
+					break;
+				default:
+					result = new SendOrderResult(SendOrderStatus.FAILED.status, code + ":" + msg, providerOrderId);
+					break;
+				}
+			} else {
+				result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "充值返回为空,请找技术人员", providerOrderId);
+			}
+		} catch (Exception e) {
+			result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "系统异常,请找技术人员", providerOrderId);
+			FlowSendLogUtils.sendExceptionLog(log, order_orderId, e);
+		}
+		return result;
+	}
+
+	@Override
+	public Map<String, SendOrderResult> querys(List<SendOrderInfo> sendOrderInfos) {
+		Map<String, SendOrderResult> map = new HashMap<>();
+		for (SendOrderInfo sendOrderInfo : sendOrderInfos) {
+
+			SendOrderResult result = null;
+
+			String order_orderId = sendOrderInfo.getOrderId();// AA订单id
+																// xxxxxB0Bxxxx
+			String providerOrderId = sendOrderInfo.getSupplierOrderId(); // 供应商流水号
+
+			try {
+				String queryUrl = Constants.getString("MCHUAN_queryUrl").trim();
+				String queryReq = MCHUANUtils.getQueryReq(sendOrderInfo);
+
+				// 提交查询
+				FlowQueryLogUtils.queryReqLog(log, order_orderId, queryReq);
+				String queryResp = HttpUtils.sendPostEncode(queryUrl, queryReq,"utf-8");
+				FlowQueryLogUtils.queryResLog(log, order_orderId, queryResp);
+
+				if (StringUtils.isNotBlank(queryResp)) {
+					NamedNodeMap attributes = XmlUtils.getXmlNoteList(queryResp, "root").item(0).getAttributes();
+
+					String code = attributes.getNamedItem("return").getNodeValue(); // return
+					String msg = attributes.getNamedItem("info").getNodeValue(); // info
+
+					if ("0".equals(code)) { // <root return="0" info="成功"
+											// taskid="1703131223014021840"/>
+
+						// <root
+						// return="0" info="成功"
+						// taskid="1703091703192250120"
+						// code="0" message="success"
+						// time="2017-03-09 17:12:58"/>
+						String supplier_id = attributes.getNamedItem("taskid").getNodeValue();
+						providerOrderId = supplier_id;
+						Node codeIdem = attributes.getNamedItem("code");
+						// root标签中存在code属性,说明有返回状态
+						if (codeIdem != null) {
+							code = codeIdem.getNodeValue(); // code
+							msg = attributes.getNamedItem("message").getNodeValue(); // message
+							if ("0".equals(code)) {
+								result = new SendOrderResult(SendOrderStatus.SUCCESS.status, null, providerOrderId);
+							} else {
+								result = new SendOrderResult(SendOrderStatus.FAILED.status,
+										"充值失败,core:(" + code + ")->" + msg, providerOrderId);
+							}
+						} else {
+							result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status, null, providerOrderId);
+						}
+					}else if ("1001002".equals(code)) { //余额不足转人工
+							result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, msg, providerOrderId);
+					} else {
+						result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status,
+								"订单查询失败,core:" + code + "->" + msg, providerOrderId);
+					}
+				} else {
+					result = new SendOrderResult(SendOrderStatus.WAIT_CALLBACK.status, "查询返回为空", providerOrderId);
+				}
+			} catch (Exception e) {
+				result = new SendOrderResult(SendOrderStatus.NEED_MANUAL.status, "系统异常,请找技术人员", providerOrderId);
+				FlowQueryLogUtils.queryExceptionLog(log, CommonUtils.getLogParamListId(sendOrderInfos), e);
+			}
+			map.put(order_orderId, result);
+		}
+		return map;
+	}
+
+	@Override
+	public SendOrderResult query(SendOrderInfo sendOrderInfo) {
+		List<SendOrderInfo> queryList = new ArrayList<>();
+		queryList.add(sendOrderInfo);
+		Map<String, SendOrderResult> mapRes = querys(queryList);
+		if (mapRes != null) {
+			return mapRes.get(sendOrderInfo.getOrderId());
+		}
+		return null;
+	}
+
+}

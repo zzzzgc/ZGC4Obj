@@ -1,0 +1,23 @@
+#===============================================================
+#   hquan_test
+#===============================================================
+#hquan_sendUrl=http://115.28.101.43:40004/buyQuota
+#hquan_queryUrl=http://115.28.101.43:40004/queryOrder
+hquan_sendUrl=http://118.190.104.138:40004/buyQuota
+hquan_queryUrl=http://118.190.104.138:40004/queryOrder
+hquan_appid=161
+hquan_key=MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAJV+8TztUp7eNnL5QfqLUUzn9T2cPd16xxoxWh2f5TeIcVTXp4P+bj9f9+fMOyvoIJSeUgbGjHimNUMauMLiJkYqLvMGkn2lfKGVvPs1+HozX9b5ya4nNomER9vcv+tsibaAD2aVMwWYnhPkHnpykq+bUg9txh036iklCny2CrNbAgMBAAECgYBAcERZx846Lnx32Jso/M5hgQaDtQoxoo+Z6bX3WQm7gzOep4pMaepppNs97hl/VoJcrVWcGA9KnhINR8JmNobaROad1tHXOSru20Oz45bez0/NvgzYYlDioY0mluzs4cOS3X5EkclpNXmFijzP4kf8M4sfWx3u0OLg18SCH420WQJBAMr8VNsrD/ZhApgzE8EVzu6XQ9vJGMFmmk+Ks1rrHzi0fapYITAXc492hifoyqyy3T+4gGxcLYq1S32sQ0aJL+8CQQC8ikU80MbklTo3V4HpRjk1lu5bgKgcHY2emzWu2RFXYUqyKdXwCE3aL+1TgEbr8jIT58IBe9NlF30I+88idcdVAkEAtmnim/7r3l65pSspknhVuSYorkfevlbFT7v2iDsJmLzivYVrdbttdzxtPUo/cMlgeNYGWtrPdnqL98kpwCai8wJABdTU/WOLs0g2S73mI7vrSxAHAUeCa5QybCRqzaSjF6vHrqkCl/D5z3TKB1ohV2zfRaRWaMtWp3rJgDyhlHRGHQJBALAdk9XVaT9CyYV+hXEv+P8wfReK0v2ZSx4puh9NKdOt/pLPaT3k1z2f9wsP//tKFgC7GWtCzgLIp9bXAwp78ig=
+hquan_callback=http://106.14.18.108:28083/hquan_callback.do
+hquan_publicKey=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCVfvE87VKe3jZy+UH6i1FM5/U9nD3descaMVodn+U3iHFU16eD/m4/X/fnzDsr6CCUnlIGxox4pjVDGrjC4iZGKi7zBpJ9pXyhlbz7Nfh6M1/W+cmuJzaJhEfb3L/rbIm2gA9mlTMFmJ4T5B56cpKvm1IPbcYdN+opJQp8tgqzWwIDAQAB
+#===============================================================
+#   hquan_zhengshi
+#===============================================================
+#hquan_sendUrl=http://115.28.101.43:40004/buyQuota
+#hquan_queryUrl=http://115.28.101.43:40004/queryOrder
+#hquan_id=
+#hquan_key=
+#hquan_callback=http://send.zerogou.com/hquan_callback.do
+#===============================================================
+#testbackUrl
+
+#hquan_backUrl=http://xxxx/hquan_callback.do

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 用户模块配置. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<bean id="sendOrderService" class="com.xinxing.o.boss.business.provider.service.SendOrderServiceImpl" />
+
+	<bean id="chinaMobileSendApi"
+		class="com.xinxing.o.boss.business.provider.api.chinamobile.ChinaMobileSendApiImpl" />
+
+	<bean id="uniComSendApi"
+		class="com.xinxing.o.boss.business.provider.api.chinatelecom.TeleComSendApiImpl" />
+
+	<bean id="teleComSendApi"
+		class="com.xinxing.o.boss.business.provider.api.chinaunicom.UniComSendApiImpl" />
+		
+	<bean id="demoTestApi" class="com.xinxing.o.boss.business.provider.other.test.DemoTestYDApiImpl"></bean>	
+			<!-- 杭州易充宝 S -->
+	<bean id="hzycbSendApi"
+		class="com.xinxing.o.boss.business.provider.other.hzycb.api.HzycbSendApiImpl" />
+	<!-- 杭州易充宝 E -->
+	
+	<!-- 重庆电信 S -->
+	<bean id="justtestSendApi"
+		class="com.xinxing.o.boss.business.provider.other.justtest.api.JusttestSendApiImpl" />
+	<!-- 重庆电信 E -->
+	
+	<!-- 大boss宸信 S -->
+	<bean id="bigbosscxSendApi"
+		class="com.xinxing.o.boss.business.provider.other.bigbosscx.api.BigbosscxSendApiImpl" />
+	<!-- 大boss宸信 E -->
+	
+	<!-- 测试山东联通 S -->
+	<bean id="testsdltSendApi"
+		class="com.xinxing.o.boss.business.provider.other.testsdlt.api.TestsdltSendApiImpl" />
+	<!-- 测试山东联通 E -->
+	
+	<!-- 测试yliang S -->
+	<bean id="yliangSendApi"
+		class="com.xinxing.o.boss.business.provider.other.yliang.api.YliangSendApiImpl" />
+	<!-- 测试yliang E -->
+	
+	<!-- ZHIQU-->
+	<bean id = "zhiQuTestSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.zhiqutest.api.ZhiQuTestSendApiImpl"/>
+	<!-- 测试山东联通1-->
+	<bean id = "testSdltSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.testsdlt1.api.TestSdltSendApiImpl"/>
+	<!-- 测试YSHANG-->
+	<bean id = "yshangSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.yshang.api.YshangSendApiImpl"/>
+	
+	<!-- MHAN-->
+	<bean id = "mhanSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.mhan.api.MHANSendApiImpl"/>
+	<!-- KDOU -->
+	<bean id = "kdouSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.kdou.api.KdouSendApiImpl"/>
+	<!-- cyue -->
+	<bean id = "cYUESendApi" 
+		class="com.xinxing.o.boss.business.provider.other.cyue.api.CYUESendApiImpl"/>
+	<!-- MCHUAN -->
+	<bean id = "mchuanSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.mchuan.api.MCHUANSendApiImpl"/>
+	<!-- JNLT -->
+	<bean id = "jNLTSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.jnlt.api.JNLTSendApiImpl"/>
+	<!-- TXIN -->
+	<bean id = "txinSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.txin.api.TXINSendApiImpl"/>
+	<!-- LLIU -->
+	<bean id = "lliuSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.lliu.api.LliuSendApiImpl"/>
+	<!-- JOSY -->
+	<bean id = "jOSYSendApi" 
+		class="com.xinxing.o.boss.business.provider.other.josy.api.JOSYSendApiImpl"/>
+	
+</beans>

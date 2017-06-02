@@ -1,0 +1,10 @@
+#===============================================================
+#   jnlt @author wuzl
+#===============================================================
+JNLT_sendUrl=http://yunshang.go10010.cn:8080/recharge/partnerapi/flow/recharge.do
+JNLT_queryUrl=http://yunshang.go10010.cn:8080/recharge/partnerapi/flow/queryOrder.do
+JNLT_encoding=15078965432 
+JNLT_promotion=30001
+JNLT_supplierId=DFJL2FBYEN
+JNLT_key=bokDjouPJgGjyfFI8rNfJwEPFOssxlpH
+#hy_notify=http://112.74.48.39:8080/zerogou

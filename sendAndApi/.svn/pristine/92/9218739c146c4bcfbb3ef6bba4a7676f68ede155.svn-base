@@ -1,0 +1,67 @@
+package com.xinxing.o.boss.business.provider.shcedule;
+
+
+public interface ScheduleJobApi {
+	/**
+	 * 定时查询任务
+	 */
+	public void demoQuery_Job();
+	/**
+	 * 杭州易充宝
+	 */
+	public void hzycb_Job();
+	/**
+	 * 重启电信
+	 */
+	public void justtest_Job();
+	/**
+	 * 大boss宸信
+	 */
+	public void bigbosscx_Job();
+	/**
+	 * 测试山东联通
+	 */
+	public void testsdlt_Job();
+	/**
+	 * yliang
+	 * @author zgc
+	 */
+	void yliang_Job();
+	/**
+	 * 测试zhiqu
+	 */
+	void zhiqu_Job();
+	/**
+	 * 测试山东联通1
+	 */
+	void testsdlt1_Job();
+	/**
+	 * 测试YSHANG
+	 */
+	void yshang_Job();
+	/**
+	 * MHAN
+	 * @author zgc
+	 */
+	void MHAN_Job();
+	/**
+	 * @author 唐镜茗
+	 * @date   2017年3月2日下午4:24:40
+	 */
+	void cyue_Job();
+	/**
+	 * @author 唐镜茗
+	 * @date   2017年3月2日下午6:19:46
+	 */
+	void kdou_Job();
+	/**
+	 * HCHUAN
+	 * @author zgc
+	 */
+	void MCHUAN_Job();
+	/**
+	 * JNLT
+	 * @author wuzl
+	 */
+	void jNLT_Job();
+}

@@ -1,0 +1,183 @@
+package com.xinxing.o.boss.business.provider.api.chinaunicom;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.xinxing.boss.business.api.domain.SendOrderInfo;
+import com.xinxing.boss.business.api.domain.SendOrderResult;
+import com.xinxing.boss.business.api.domain.SendOrderStatus;
+import com.xinxing.o.boss.business.provider.other.bigbosscx.api.BigbosscxSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.cyue.api.CYUESendApiImpl;
+import com.xinxing.o.boss.business.provider.other.hquan.api.HquanSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.hzycb.api.HzycbSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.jnlt.api.JNLTSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.josy.api.JOSYSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.justtest.api.JusttestSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.kdou.api.KdouSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.lliu.api.LliuSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.mchuan.api.MCHUANSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.qgdx.api.QGDXSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.testsdlt.api.TestsdltSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.txin.api.TXINSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.yliang.api.YliangSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.yshang.api.YshangSendApiImpl;
+import com.xinxing.o.boss.business.provider.other.zhiqutest.api.ZhiQuTestSendApiImpl;
+
+public class UniComSendApiImpl implements UniComSendApi {
+	@Autowired
+	private HzycbSendApiImpl hzycbSendApi;
+	@Autowired
+	private JusttestSendApiImpl justtestSendApi;
+	@Autowired
+	private BigbosscxSendApiImpl bigbosscxSendApi;
+	@Autowired
+	private TestsdltSendApiImpl testsdltSendApi;
+	@Autowired
+	private YliangSendApiImpl  yliangSendApi;
+	@Autowired
+	private ZhiQuTestSendApiImpl zhiQuTestSendApi;
+	@Autowired
+	private YshangSendApiImpl yshangSendApi;
+	@Autowired 
+	private MCHUANSendApiImpl mchuanSendApi;
+	@Autowired
+	private CYUESendApiImpl cYUESendApi;
+	@Autowired
+	private KdouSendApiImpl kdouSendApi;
+	@Autowired
+	private JNLTSendApiImpl jNLTSendApi;
+	@Autowired
+	private TXINSendApiImpl txinSendApi;
+	@Autowired
+	private LliuSendApiImpl lliuSendApi;
+	@Autowired
+	private JOSYSendApiImpl josySendApi;
+	@Autowired
+	private QGDXSendApiImpl qgdxSendApi;
+	@Autowired
+	private HquanSendApiImpl hquanSendApi;
+	
+	@Override
+	public SendOrderResult send(SendOrderInfo sendOrderInfo) {
+		String supplier = sendOrderInfo.getSupplier();
+		SendOrderResult result = null;
+		UniComSendApiCode apiCode = Enum.valueOf(UniComSendApiCode.class, supplier);
+		if(apiCode==null){
+			return new SendOrderResult(SendOrderStatus.FAILED.status, "没有匹配的供货商-请检查产品与手机号", null);
+		}
+		switch(apiCode){
+		case HZYCB_LT:
+			result = hzycbSendApi.send(sendOrderInfo);
+			break;
+		case JUSTTEST_LT:
+			result = justtestSendApi.send(sendOrderInfo);
+			break;
+		case BIGBOSSCX_LT:
+			result = bigbosscxSendApi.send(sendOrderInfo);
+			break;
+		case TESTSDLT_LT:
+			result = testsdltSendApi.send(sendOrderInfo);
+			break;
+		case YLIANG_LT:
+			result = yliangSendApi.send(sendOrderInfo);
+			break;
+		case YSHANG_LT:
+			result = yshangSendApi.send(sendOrderInfo);
+			break;
+		case MCHUAN_LT:
+			result = mchuanSendApi.send(sendOrderInfo);
+			break;
+		case ZHIQU_LT:
+			result = zhiQuTestSendApi.send(sendOrderInfo);
+			break;
+		case CYUE_LT:
+			result = cYUESendApi.send(sendOrderInfo);
+			break;
+		case KDOU_LT:
+			result = kdouSendApi .send(sendOrderInfo);
+			break;
+		case JNLT_LT:
+			result = jNLTSendApi .send(sendOrderInfo);
+			break;
+		case TXIN_LT:
+			result = txinSendApi.send(sendOrderInfo);
+			break;
+		case LLIU_LT:
+			result = lliuSendApi.send(sendOrderInfo);
+			break;
+		case JOSY_LT:
+			result = josySendApi.send(sendOrderInfo);
+			break;
+		case QGDX_LT:
+			result = qgdxSendApi.send(sendOrderInfo);
+			break;
+		case HQUAN_LT:
+			result = hquanSendApi.send(sendOrderInfo);
+			break;
+		}
+	
+		return result;
+	}
+	
+	@Override
+	public SendOrderResult query(SendOrderInfo sendOrderInfo) {
+		String supplier = sendOrderInfo.getSupplier();
+		SendOrderResult result = null;
+		UniComSendApiCode apiCode = Enum.valueOf(UniComSendApiCode.class, supplier);
+		if(apiCode==null){
+			return new SendOrderResult(SendOrderStatus.FAILED.status, "没有匹配的供货商-请检查产品与手机号", null);
+		}
+		switch(apiCode){
+		case HZYCB_LT:
+			result = hzycbSendApi.query(sendOrderInfo);
+			break;
+		case JUSTTEST_LT:
+			result = justtestSendApi.query(sendOrderInfo);
+			break;
+		case BIGBOSSCX_LT:
+			result = bigbosscxSendApi.query(sendOrderInfo);
+			break;
+		case TESTSDLT_LT:
+			result = testsdltSendApi.query(sendOrderInfo);
+			break;
+		case YLIANG_LT:
+			result = yliangSendApi.query(sendOrderInfo);
+			break;
+		case ZHIQU_LT:
+			result = zhiQuTestSendApi.query(sendOrderInfo);
+			break;
+		case YSHANG_LT:
+			result = yshangSendApi.query(sendOrderInfo);
+			break;
+		case MCHUAN_LT:
+			result = mchuanSendApi.query(sendOrderInfo);
+			break;
+		case CYUE_LT:
+			result = cYUESendApi.query(sendOrderInfo);
+			break;
+		case KDOU_LT:
+			result = kdouSendApi.query(sendOrderInfo);
+			break;
+		case JNLT_LT:
+			result = jNLTSendApi.query(sendOrderInfo);
+			break;
+		case TXIN_LT:
+			result = txinSendApi.query(sendOrderInfo);
+			break;
+		case LLIU_LT:
+			result = lliuSendApi.query(sendOrderInfo);
+			break;
+		case JOSY_LT:
+			result = josySendApi.query(sendOrderInfo);
+			break;
+		case QGDX_LT:
+			result = qgdxSendApi.query(sendOrderInfo);
+			break;
+		case HQUAN_LT:
+			result = hquanSendApi.query(sendOrderInfo);
+			break;
+		}
+		
+		return result;
+	}
+
+}
